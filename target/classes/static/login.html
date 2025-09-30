@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body>
 <div class="container">
@@ -14,7 +16,6 @@
         <input type="password" name="senha" placeholder="Senha" required />
         <button class="primary" type="submit">Entrar</button>
     </form>
-    <div id="msg"></div>
     <p>Não tem conta? <a href="/cadastro.html">Cadastre-se</a></p>
 </div>
 
@@ -35,12 +36,35 @@
 
             if (res.ok) {
                 localStorage.setItem('usuario', JSON.stringify(json));
-                window.location.href = '/painel.html'; // redireciona após login
+
+                Toastify({
+                    text: "Login realizado com sucesso!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                }).showToast();
+
+                setTimeout(() => {
+                    window.location.href = '/painel.html';
+                }, 1500);
             } else {
-                document.getElementById('msg').textContent = json.erro || 'Erro ao logar';
+                Toastify({
+                    text: json.erro || "Credenciais inválidas",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
             }
         } catch (err) {
-            document.getElementById('msg').textContent = 'Erro de rede ou servidor.';
+            Toastify({
+                text: "Erro de conexão com o servidor.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+            }).showToast();
         }
     });
 </script>

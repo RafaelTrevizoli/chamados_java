@@ -4,113 +4,174 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Meus Chamados</title>
+
+    <!-- Estilo -->
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        .container {
+            max-width: 800px;
+        }
+        .chamado {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .chamado h3 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+        }
+        .chamado p {
+            margin: 0.25rem 0;
+            color: #555;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
+
 <body>
 <div class="container">
-    <h1>📋 Meus Chamados</h1>
-
-    <nav>
-        <a href="/painel.html">🏠 Voltar ao Painel</a> |
-        <a href="#" id="logout">Sair</a>
-    </nav>
-
-    <div class="card">
-        <h2>Abrir Novo Chamado</h2>
-        <form id="formChamado">
-            <input type="text" name="titulo" placeholder="Título" required />
-            <textarea name="descricao" placeholder="Descrição detalhada" required></textarea>
-            <button class="primary" type="submit">Abrir Chamado</button>
-        </form>
-        <div id="msgForm"></div>
+    <div class="header">
+        <h1>Meus Chamados</h1>
+        <button id="logoutBtn" class="logout-btn">Sair</button>
     </div>
 
-    <h2>📄 Lista de Chamados</h2>
-    <div id="lista"></div>
+    <form id="formChamado">
+        <input type="text" name="titulo" placeholder="Título do chamado" required />
+        <textarea name="descricao" placeholder="Descrição detalhada" required></textarea>
+        <button class="primary" type="submit">Criar Chamado</button>
+    </form>
+
+    <hr style="margin: 2rem 0;">
+
+    <h2>Chamados Registrados</h2>
+    <div id="listaChamados">
+        <p>Carregando chamados...</p>
+    </div>
 </div>
 
 <script>
-    // 🔐 Verificação de login
-    const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    const lista = document.getElementById('listaChamados');
+    const form = document.getElementById('formChamado');
+
+    // 🔐 Proteção de rota
     if (!usuario) {
         window.location.href = '/login.html';
     }
 
-    // Logout
-    document.getElementById('logout').addEventListener('click', () => {
+    // 🚪 Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('usuario');
-        window.location.href = '/login.html';
+        Toastify({
+            text: "Logout realizado com sucesso!",
+            duration: 2000,
+            gravity: "top",
+            position: "right",
+            style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+        }).showToast();
+        setTimeout(() => window.location.href = '/login.html', 1500);
     });
 
-    const msgForm = document.getElementById('msgForm');
-    const lista = document.getElementById('lista');
-
-    // 🧠 Função para carregar chamados
+    // 📋 Carregar chamados
     async function carregarChamados() {
         try {
             const res = await fetch(`/api/chamados/cliente/${usuario.id}`);
-            if (!res.ok) {
-                throw new Error('Erro ao buscar chamados. Código: ' + res.status);
-            }
+            if (!res.ok) throw new Error('Erro ao buscar chamados');
+            const chamados = await res.json();
 
-            const data = await res.json();
-            lista.innerHTML = '';
-
-            if (!Array.isArray(data) || data.length === 0) {
-                lista.innerHTML = '<p>Nenhum chamado encontrado.</p>';
+            if (chamados.length === 0) {
+                lista.innerHTML = "<p>Nenhum chamado encontrado.</p>";
                 return;
             }
 
-            data.forEach(chamado => {
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.innerHTML = `
-            <strong>${chamado.titulo}</strong><br>
-            <em>Status:</em> ${chamado.status}<br>
-            <p>${chamado.descricao}</p>
-            <small>Criado em: ${
-                    chamado.dataCriacao
-                        ? new Date(chamado.dataCriacao).toLocaleString('pt-BR')
-                        : 'data não informada'
-                }</small>
-          `;
-                lista.appendChild(div);
-            });
+            lista.innerHTML = chamados.map(c => `
+          <div class="chamado">
+            <h3>${c.titulo}</h3>
+            <p><strong>Status:</strong> ${c.status}</p>
+            <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString('pt-BR')}</p>
+            <p>${c.descricao}</p>
+          </div>
+        `).join('');
         } catch (err) {
-            lista.innerHTML = `<p style="color:red;">❌ Erro: ${err.message}</p>`;
+            console.error(err);
+            Toastify({
+                text: "Erro ao carregar chamados.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+            }).showToast();
         }
     }
 
-    // 🧾 Submeter novo chamado
-    const form = document.getElementById('formChamado');
+    // ➕ Criar chamado
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const payload = Object.fromEntries(new FormData(form));
-        payload.clienteId = usuario.id; // vincula o usuário logado
+        const data = Object.fromEntries(new FormData(form));
+        data.clienteId = usuario.id;
 
         try {
             const res = await fetch('/api/chamados/criar', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
 
             const json = await res.json();
 
             if (res.ok) {
-                msgForm.innerHTML = `<p style="color:green;">✅ Chamado criado com sucesso!</p>`;
+                Toastify({
+                    text: "Chamado criado com sucesso!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                }).showToast();
                 form.reset();
                 carregarChamados();
             } else {
-                msgForm.innerHTML = `<p style="color:red;">❌ ${json.erro || 'Erro ao criar chamado'}</p>`;
+                Toastify({
+                    text: json.erro || "Erro ao criar chamado.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
             }
         } catch (err) {
-            msgForm.innerHTML = `<p style="color:red;">❌ Erro: ${err.message}</p>`;
+            Toastify({
+                text: "Erro de conexão com o servidor.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+            }).showToast();
         }
     });
 
-    // 🚀 Inicializa a lista
+    // 🚀 Inicialização
     carregarChamados();
 </script>
 </body>

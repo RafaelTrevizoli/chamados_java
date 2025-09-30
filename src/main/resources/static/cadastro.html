@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Cadastro</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body>
 <div class="container">
-    <h1>Cadastro de Usuário</h1>
-
+    <h1>Criar Conta</h1>
     <form id="formCadastro">
-        <input type="text" name="nome" placeholder="Nome" required />
+        <input type="text" name="nome" placeholder="Nome completo" required />
         <input type="email" name="email" placeholder="Email" required />
         <input type="password" name="senha" placeholder="Senha" required />
         <select name="tipo">
@@ -20,39 +21,54 @@
         </select>
         <button class="primary" type="submit">Cadastrar</button>
     </form>
-
-    <div id="msg"></div>
-    <p>Já tem conta? <a href="/login.html">Fazer login</a></p>
+    <p>Já possui conta? <a href="/login.html">Fazer login</a></p>
 </div>
 
 <script>
-    // 🔐 Se já estiver logado, envia pro painel
     const usuario = localStorage.getItem('usuario');
-    if (usuario) {
-        window.location.href = '/painel.html';
-    }
+    if (usuario) window.location.href = '/painel.html';
 
     const form = document.getElementById('formCadastro');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(form));
 
-        const res = await fetch('/api/usuarios/cadastro', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
+        try {
+            const res = await fetch('/api/usuarios/cadastro', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
 
-        const msgDiv = document.getElementById('msg');
-        if (res.ok) {
-            msgDiv.innerHTML = `
-          <p style="color:green;">✅ Cadastro realizado com sucesso!</p>
-          <a href="/login.html">Ir para login</a>
-        `;
-            form.reset();
-        } else {
             const json = await res.json();
-            msgDiv.innerHTML = `<p style="color:red;">❌ ${json.erro || 'Erro ao cadastrar'}</p>`;
+
+            if (res.ok) {
+                Toastify({
+                    text: "Cadastro realizado com sucesso! Redirecionando...",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                }).showToast();
+
+                setTimeout(() => window.location.href = '/login.html', 1500);
+            } else {
+                Toastify({
+                    text: json.erro || "Erro ao cadastrar usuário",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
+            }
+        } catch (err) {
+            Toastify({
+                text: "Erro de conexão com o servidor.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+            }).showToast();
         }
     });
 </script>
