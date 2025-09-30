@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Cadastro de Usuário</h1>
+    <form id="formCadastro">
+      <input type="text" name="nome" placeholder="Nome" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="senha" placeholder="Senha" required />
+      <select name="tipo">
+        <option value="CLIENTE">Cliente</option>
+        <option value="ATENDENTE">Atendente</option>
+      </select>
+      <button class="primary" type="submit">Cadastrar</button>
+    </form>
+    <div id="msg"></div>
+    <p><a href="/">Voltar</a></p>
+  </div>
+  <script>
+    const form = document.getElementById('formCadastro');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      const res = await fetch('/api/usuarios/cadastro', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      let text = 'Cadastro realizado!';
+      try { const json = await res.json(); if (!res.ok) text = json.erro || 'Erro'; } catch (e) {}
+      document.getElementById('msg').textContent = text;
+    });
+  </script>
+</body>
+</html>
