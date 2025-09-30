@@ -1,72 +1,117 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chamados</title>
-  <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Meus Chamados</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Meus Chamados</h1>
+<div class="container">
+    <h1>📋 Meus Chamados</h1>
+
+    <nav>
+        <a href="/painel.html">🏠 Voltar ao Painel</a> |
+        <a href="#" id="logout">Sair</a>
+    </nav>
+
     <div class="card">
-      <form id="formChamado">
-        <input type="text" name="titulo" placeholder="Título" required />
-        <textarea name="descricao" placeholder="Descrição" required></textarea>
-        <button class="primary" type="submit">Abrir Chamado</button>
-      </form>
+        <h2>Abrir Novo Chamado</h2>
+        <form id="formChamado">
+            <input type="text" name="titulo" placeholder="Título" required />
+            <textarea name="descricao" placeholder="Descrição detalhada" required></textarea>
+            <button class="primary" type="submit">Abrir Chamado</button>
+        </form>
+        <div id="msgForm"></div>
     </div>
 
+    <h2>📄 Lista de Chamados</h2>
     <div id="lista"></div>
-    <p><a href="/">Voltar</a></p>
-  </div>
-  <script>
-    function getUsuario() {
-      const u = localStorage.getItem('usuario');
-      return u ? JSON.parse(u) : null;
+</div>
+
+<script>
+    // 🔐 Verificação de login
+    const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+    if (!usuario) {
+        window.location.href = '/login.html';
     }
 
-    async function carregar() {
-      const usuario = getUsuario();
-      if (!usuario) {
-        document.getElementById('lista').textContent = 'Faça login para ver seus chamados.';
-        return;
-      }
-      const res = await fetch('/api/chamados/cliente/' + usuario.id);
-      const data = await res.json();
-      const div = document.getElementById('lista');
-      div.innerHTML = '';
-      data.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.innerHTML = '<strong>' + c.titulo + '</strong><br/>' +
-                       '<em>Status:</em> ' + c.status + '<br/>' +
-                       '<p>' + c.descricao + '</p>';
-        div.appendChild(el);
-      });
-    }
-
-    document.getElementById('formChamado').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const usuario = getUsuario();
-      if (!usuario) { alert('Faça login primeiro'); return; }
-      const fd = new FormData(e.target);
-      const payload = Object.fromEntries(fd);
-      payload.clienteId = usuario.id;
-      const res = await fetch('/api/chamados/criar', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        e.target.reset();
-        carregar();
-      } else {
-        try { const j = await res.json(); alert(j.erro || 'Erro ao criar chamado'); } catch (e) { alert('Erro'); }
-      }
+    // Logout
+    document.getElementById('logout').addEventListener('click', () => {
+        localStorage.removeItem('usuario');
+        window.location.href = '/login.html';
     });
 
-    carregar();
-  </script>
+    const msgForm = document.getElementById('msgForm');
+    const lista = document.getElementById('lista');
+
+    // 🧠 Função para carregar chamados
+    async function carregarChamados() {
+        try {
+            const res = await fetch(`/api/chamados/cliente/${usuario.id}`);
+            if (!res.ok) {
+                throw new Error('Erro ao buscar chamados. Código: ' + res.status);
+            }
+
+            const data = await res.json();
+            lista.innerHTML = '';
+
+            if (!Array.isArray(data) || data.length === 0) {
+                lista.innerHTML = '<p>Nenhum chamado encontrado.</p>';
+                return;
+            }
+
+            data.forEach(chamado => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+            <strong>${chamado.titulo}</strong><br>
+            <em>Status:</em> ${chamado.status}<br>
+            <p>${chamado.descricao}</p>
+            <small>Criado em: ${
+                    chamado.dataCriacao
+                        ? new Date(chamado.dataCriacao).toLocaleString('pt-BR')
+                        : 'data não informada'
+                }</small>
+          `;
+                lista.appendChild(div);
+            });
+        } catch (err) {
+            lista.innerHTML = `<p style="color:red;">❌ Erro: ${err.message}</p>`;
+        }
+    }
+
+    // 🧾 Submeter novo chamado
+    const form = document.getElementById('formChamado');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const payload = Object.fromEntries(new FormData(form));
+        payload.clienteId = usuario.id; // vincula o usuário logado
+
+        try {
+            const res = await fetch('/api/chamados/criar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            const json = await res.json();
+
+            if (res.ok) {
+                msgForm.innerHTML = `<p style="color:green;">✅ Chamado criado com sucesso!</p>`;
+                form.reset();
+                carregarChamados();
+            } else {
+                msgForm.innerHTML = `<p style="color:red;">❌ ${json.erro || 'Erro ao criar chamado'}</p>`;
+            }
+        } catch (err) {
+            msgForm.innerHTML = `<p style="color:red;">❌ Erro: ${err.message}</p>`;
+        }
+    });
+
+    // 🚀 Inicializa a lista
+    carregarChamados();
+</script>
 </body>
 </html>

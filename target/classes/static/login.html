@@ -1,44 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login</title>
-  <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="container">
+<div class="container">
     <h1>Login</h1>
     <form id="formLogin">
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="password" name="senha" placeholder="Senha" required />
-      <button class="primary" type="submit">Entrar</button>
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="senha" placeholder="Senha" required />
+        <button class="primary" type="submit">Entrar</button>
     </form>
     <div id="msg"></div>
-    <p><a href="/">Voltar</a></p>
-  </div>
-  <script>
+    <p>Não tem conta? <a href="/cadastro.html">Cadastre-se</a></p>
+</div>
+
+<script>
     const form = document.getElementById('formLogin');
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
-      const res = await fetch('/api/usuarios/login', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      });
-      try {
-        const json = await res.json();
-        if (res.ok) {
-          localStorage.setItem('usuario', JSON.stringify(json));
-          document.getElementById('msg').textContent = 'Login ok!';
-        } else {
-          document.getElementById('msg').textContent = json.erro || 'Erro';
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(form));
+
+        try {
+            const res = await fetch('/api/usuarios/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+
+            const json = await res.json();
+
+            if (res.ok) {
+                localStorage.setItem('usuario', JSON.stringify(json));
+                window.location.href = '/painel.html'; // redireciona após login
+            } else {
+                document.getElementById('msg').textContent = json.erro || 'Erro ao logar';
+            }
+        } catch (err) {
+            document.getElementById('msg').textContent = 'Erro de rede ou servidor.';
         }
-      } catch (e) {
-        document.getElementById('msg').textContent = 'Erro de rede';
-      }
     });
-  </script>
+</script>
 </body>
 </html>
