@@ -2,70 +2,82 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Login</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Sistema de Chamados</title>
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+
+    <!-- Toastify -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
-<body>
-<div class="container">
-    <h1>Login</h1>
-    <form id="formLogin">
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="senha" placeholder="Senha" required />
-        <button class="primary" type="submit">Entrar</button>
-    </form>
-    <p>Não tem conta? <a href="/cadastro.html">Cadastre-se</a></p>
-</div>
+
+<body class="auth-page">
+<main>
+    <div class="container">
+        <h1>Login</h1>
+
+        <input type="email" id="email" placeholder="E-mail" />
+        <input type="password" id="senha" placeholder="Senha" />
+        <button id="btnLogin" class="primary">Entrar</button>
+
+        <p style="text-align:center; margin-top:1rem;">
+            Ainda não tem conta?
+            <a href="/cadastro.html" style="color:#00b09b; text-decoration:none;">Cadastre-se</a>
+        </p>
+    </div>
+</main>
 
 <script>
-    const form = document.getElementById('formLogin');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form));
+    document.addEventListener("DOMContentLoaded", () => {
+        const email = document.getElementById("email");
+        const senha = document.getElementById("senha");
+        const btnLogin = document.getElementById("btnLogin");
 
-        try {
-            const res = await fetch('/api/usuarios/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
+        btnLogin.addEventListener("click", async () => {
+            if (!email.value.trim() || !senha.value.trim()) {
+                Toastify({
+                    text: "Preencha todos os campos!",
+                    duration: 2500,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
+                return;
+            }
 
-            const json = await res.json();
+            try {
+                const res = await fetch("/api/usuarios/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email.value, senha: senha.value })
+                });
 
-            if (res.ok) {
-                localStorage.setItem('usuario', JSON.stringify(json));
+                if (!res.ok) throw new Error(res.status);
+                const usuario = await res.json();
+
+                localStorage.setItem("usuario", JSON.stringify(usuario));
 
                 Toastify({
                     text: "Login realizado com sucesso!",
-                    duration: 3000,
+                    duration: 2000,
                     gravity: "top",
                     position: "right",
                     style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
                 }).showToast();
 
-                setTimeout(() => {
-                    window.location.href = '/painel.html';
-                }, 1500);
-            } else {
+                setTimeout(() => (window.location.href = "/painel.html"), 1500);
+            } catch (err) {
                 Toastify({
-                    text: json.erro || "Credenciais inválidas",
-                    duration: 3000,
+                    text: "E-mail ou senha incorretos.",
+                    duration: 2500,
                     gravity: "top",
                     position: "right",
                     style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
                 }).showToast();
             }
-        } catch (err) {
-            Toastify({
-                text: "Erro de conexão com o servidor.",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-            }).showToast();
-        }
+        });
     });
 </script>
 </body>

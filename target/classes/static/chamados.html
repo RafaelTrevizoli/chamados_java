@@ -1,178 +1,131 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Chamados</title>
 
-    <!-- Estilo -->
+    <!-- Estilos globais -->
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <!-- Toastify -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-    <style>
-        .container {
-            max-width: 800px;
-        }
-        .chamado {
-            background: #fff;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-        .chamado h3 {
-            margin: 0 0 0.5rem 0;
-            color: #333;
-        }
-        .chamado p {
-            margin: 0.25rem 0;
-            color: #555;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        .logout-btn {
-            background: #f44336;
-            color: #fff;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .logout-btn:hover {
-            opacity: 0.9;
-        }
-    </style>
 </head>
-
 <body>
-<div class="container">
-    <div class="header">
+<!-- Navbar -->
+<div id="navbar"></div>
+
+<!-- Conteúdo principal -->
+<main>
+    <div class="container">
         <h1>Meus Chamados</h1>
-        <button id="logoutBtn" class="logout-btn">Sair</button>
+
+        <div class="chamados-wrapper">
+            <!-- Coluna esquerda: Formulário -->
+            <div class="form-section">
+                <input id="titulo" placeholder="Título do chamado" />
+                <textarea id="descricao" placeholder="Descrição detalhada"></textarea>
+                <button id="btnCriar" class="primary">Criar Chamado</button>
+            </div>
+
+            <!-- Coluna direita: Lista -->
+            <div class="lista-section">
+                <h2>Chamados Registrados</h2>
+                <div id="listaChamados"></div>
+            </div>
+        </div>
     </div>
+</main>
 
-    <form id="formChamado">
-        <input type="text" name="titulo" placeholder="Título do chamado" required />
-        <textarea name="descricao" placeholder="Descrição detalhada" required></textarea>
-        <button class="primary" type="submit">Criar Chamado</button>
-    </form>
+<!-- Footer -->
+<div id="footer"></div>
 
-    <hr style="margin: 2rem 0;">
-
-    <h2>Chamados Registrados</h2>
-    <div id="listaChamados">
-        <p>Carregando chamados...</p>
-    </div>
-</div>
-
+<!-- Scripts -->
+<script src="/script/includes.js"></script>
 <script>
+    // Protege rota (exige login)
     const usuario = JSON.parse(localStorage.getItem('usuario'));
-    const lista = document.getElementById('listaChamados');
-    const form = document.getElementById('formChamado');
+    if (!usuario) window.location.href = '/login.html';
 
-    // 🔐 Proteção de rota
-    if (!usuario) {
-        window.location.href = '/login.html';
-    }
+    // Criar chamado
+    document.addEventListener("DOMContentLoaded", () => {
+        const btnCriar = document.getElementById("btnCriar");
+        const titulo = document.getElementById("titulo");
+        const descricao = document.getElementById("descricao");
+        const lista = document.getElementById("listaChamados");
 
-    // 🚪 Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('usuario');
-        Toastify({
-            text: "Logout realizado com sucesso!",
-            duration: 2000,
-            gravity: "top",
-            position: "right",
-            style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-        }).showToast();
-        setTimeout(() => window.location.href = '/login.html', 1500);
-    });
+        async function carregarChamados() {
+            try {
+                const res = await fetch(`/api/chamados/cliente/${usuario.id}`);
+                if (!res.ok) throw new Error(res.status);
+                const chamados = await res.json();
 
-    // 📋 Carregar chamados
-    async function carregarChamados() {
-        try {
-            const res = await fetch(`/api/chamados/cliente/${usuario.id}`);
-            if (!res.ok) throw new Error('Erro ao buscar chamados');
-            const chamados = await res.json();
+                lista.innerHTML = "";
+                chamados.forEach(c => {
+                    const item = document.createElement("div");
+                    item.classList.add("chamado");
+                    item.innerHTML = `
+              <h3>${c.titulo}</h3>
+              <p><strong>Status:</strong> ${c.status}</p>
+              <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString()}</p>
+              <p>${c.descricao}</p>
+            `;
+                    lista.appendChild(item);
+                });
+            } catch (err) {
+                lista.innerHTML = `<p style="color:red;">Erro ao buscar chamados. Código: ${err.message}</p>`;
+            }
+        }
 
-            if (chamados.length === 0) {
-                lista.innerHTML = "<p>Nenhum chamado encontrado.</p>";
+        btnCriar.addEventListener("click", async () => {
+            if (!titulo.value.trim() || !descricao.value.trim()) {
+                Toastify({
+                    text: "Preencha todos os campos!",
+                    duration: 2000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
                 return;
             }
 
-            lista.innerHTML = chamados.map(c => `
-          <div class="chamado">
-            <h3>${c.titulo}</h3>
-            <p><strong>Status:</strong> ${c.status}</p>
-            <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString('pt-BR')}</p>
-            <p>${c.descricao}</p>
-          </div>
-        `).join('');
-        } catch (err) {
-            console.error(err);
-            Toastify({
-                text: "Erro ao carregar chamados.",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-            }).showToast();
-        }
-    }
+            try {
+                const res = await fetch("/api/chamados", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        titulo: titulo.value,
+                        descricao: descricao.value,
+                        clienteId: usuario.id
+                    })
+                });
 
-    // ➕ Criar chamado
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form));
-        data.clienteId = usuario.id;
-
-        try {
-            const res = await fetch('/api/chamados/criar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            const json = await res.json();
-
-            if (res.ok) {
+                if (!res.ok) throw new Error(res.status);
+                titulo.value = "";
+                descricao.value = "";
                 Toastify({
                     text: "Chamado criado com sucesso!",
-                    duration: 3000,
+                    duration: 2000,
                     gravity: "top",
                     position: "right",
                     style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
                 }).showToast();
-                form.reset();
+
                 carregarChamados();
-            } else {
+            } catch (err) {
                 Toastify({
-                    text: json.erro || "Erro ao criar chamado.",
-                    duration: 3000,
+                    text: `Erro ao criar chamado (Código ${err.message})`,
+                    duration: 2500,
                     gravity: "top",
                     position: "right",
                     style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
                 }).showToast();
             }
-        } catch (err) {
-            Toastify({
-                text: "Erro de conexão com o servidor.",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-            }).showToast();
-        }
-    });
+        });
 
-    // 🚀 Inicialização
-    carregarChamados();
+        carregarChamados();
+    });
 </script>
 </body>
 </html>

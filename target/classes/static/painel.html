@@ -3,35 +3,103 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Painel do Usuário</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Painel Principal</title>
+
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <!-- Toastify -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        /* ======== ESTILO ESPECÍFICO DO PAINEL ======== */
+        .painel-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 260px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .card p {
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            color: #555;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                width: 90%;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<div class="container">
-    <h1 id="tituloPainel">Bem-vindo!</h1>
+<!-- Navbar dinâmica -->
+<div id="navbar"></div>
 
-    <nav>
-        <a href="/chamados.html">Meus Chamados</a> |
-        <a href="#" id="logout">Sair</a>
-    </nav>
+<!-- Conteúdo -->
+<main>
+    <div class="container">
+        <h1>Bem-vindo ao Sistema de Chamados</h1>
+        <p style="text-align:center; margin-bottom: 2rem;">
+            Escolha uma das opções abaixo para continuar:
+        </p>
 
-    <p>Você está logado no sistema de chamados. Aqui poderá abrir e acompanhar seus atendimentos.</p>
-</div>
+        <div class="painel-container">
+            <a href="/chamados.html" class="card">
+                <h2>Meus Chamados</h2>
+                <p>Crie e visualize seus chamados</p>
+            </a>
+
+            <a href="/perfil.html" class="card">
+                <h2>Meu Perfil</h2>
+                <p>Gerencie suas informações pessoais</p>
+            </a>
+        </div>
+    </div>
+</main>
+
+<!-- Footer dinâmico -->
+<div id="footer"></div>
+
+<!-- Scripts -->
+<script src="/script/includes.js"></script>
 
 <script>
-    // Verifica login
-    const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
-    if (!usuario) {
-        window.location.href = '/login.html';
-    } else {
-        document.getElementById('tituloPainel').textContent = `Bem-vindo, ${usuario.nome}!`;
-    }
-
-    // Logout
-    document.getElementById('logout').addEventListener('click', () => {
-        localStorage.removeItem('usuario');
-        window.location.href = '/login.html';
-    });
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    if (!usuario) window.location.href = '/login.html';
 </script>
 </body>
 </html>

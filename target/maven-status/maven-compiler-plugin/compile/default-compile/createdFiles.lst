@@ -5,5 +5,5 @@ com/exemplo/chamados/repository/UsuarioRepository.class
 com/exemplo/chamados/controller/ChamadoController.class
 com/exemplo/chamados/SistemaChamadosApplication.class
 com/exemplo/chamados/model/Chamado$Status.class
-com/exemplo/chamados/model/Usuario$TipoUsuario.class
+com/exemplo/chamados/controller/ChamadoController$ChamadoRequest.class
 com/exemplo/chamados/repository/ChamadoRepository.class

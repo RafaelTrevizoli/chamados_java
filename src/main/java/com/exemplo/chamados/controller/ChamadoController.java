@@ -4,112 +4,72 @@ import com.exemplo.chamados.model.Chamado;
 import com.exemplo.chamados.model.Usuario;
 import com.exemplo.chamados.repository.ChamadoRepository;
 import com.exemplo.chamados.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/chamados")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class ChamadoController {
 
-    @Autowired
-    private ChamadoRepository chamadoRepository;
+    private final ChamadoRepository chamadoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public ChamadoController(ChamadoRepository chamadoRepository, UsuarioRepository usuarioRepository) {
+        this.chamadoRepository = chamadoRepository;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     // ✅ Criar chamado
-    @PostMapping("/criar")
-    public ResponseEntity<?> criar(@RequestBody Map<String, String> payload) {
+    @PostMapping
+    public ResponseEntity<?> criarChamado(@RequestBody ChamadoRequest request) {
         try {
-            String titulo = payload.get("titulo");
-            String descricao = payload.get("descricao");
-            Long clienteId = Long.parseLong(payload.get("clienteId"));
-
-            Optional<Usuario> cliente = usuarioRepository.findById(clienteId);
-            if (!cliente.isPresent()) {
-                return ResponseEntity.badRequest().body(Collections.singletonMap("erro", "Cliente não encontrado"));
-            }
+            Usuario cliente = usuarioRepository.findById(request.getClienteId())
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
             Chamado chamado = new Chamado();
-            chamado.setTitulo(titulo);
-            chamado.setDescricao(descricao);
-            chamado.setCliente(cliente.get());
-            chamado.setStatus(Chamado.Status.ABERTO);
+            chamado.setTitulo(request.getTitulo());
+            chamado.setDescricao(request.getDescricao());
+            chamado.setCliente(cliente);
 
             Chamado salvo = chamadoRepository.save(chamado);
-
-            Map<String, Object> resposta = new HashMap<>();
-            resposta.put("id", salvo.getId());
-            resposta.put("titulo", salvo.getTitulo());
-            resposta.put("descricao", salvo.getDescricao());
-            resposta.put("status", salvo.getStatus().name());
-            resposta.put("dataCriacao", salvo.getDataCriacao());
-
-            return ResponseEntity.ok(resposta);
+            return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
 
         } catch (Exception e) {
-            System.out.println("❌ ERRO AO CRIAR CHAMADO:");
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Collections.singletonMap("erro", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao criar chamado: " + e.getMessage());
         }
     }
 
-    // ✅ Listar chamados por cliente (com DTO simples)
+    // ✅ Listar chamados por cliente
     @GetMapping("/cliente/{id}")
-    public ResponseEntity<?> listarPorCliente(@PathVariable("id") Long id) {
+    public ResponseEntity<?> listarPorCliente(@PathVariable("id") Long clienteId) {
         try {
-            List<Chamado> chamados = chamadoRepository.findByCliente_Id(id);
-            List<Map<String, Object>> resposta = new ArrayList<>();
-
-            for (Chamado c : chamados) {
-                Map<String, Object> dto = new HashMap<>();
-                dto.put("id", c.getId());
-                dto.put("titulo", c.getTitulo());
-                dto.put("descricao", c.getDescricao());
-                dto.put("status", c.getStatus().name());
-                dto.put("dataCriacao", c.getDataCriacao());
-                resposta.add(dto);
-            }
-
-            System.out.println("✅ Chamados retornados: " + resposta.size());
-            return ResponseEntity.ok(resposta);
-
+            List<Chamado> chamados = chamadoRepository.findByClienteId(clienteId);
+            return ResponseEntity.ok(chamados);
         } catch (Exception e) {
-            System.out.println("❌ ERRO AO LISTAR CHAMADOS:");
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Collections.singletonMap("erro", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao buscar chamados: " + e.getMessage());
         }
     }
 
-    // ✅ Atualizar status do chamado
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> atualizarStatus(@PathVariable("id") Long id, @RequestBody Map<String, String> payload) {
-        try {
-            String novoStatus = payload.get("status");
+    // ✅ DTO para request
+    public static class ChamadoRequest {
+        private String titulo;
+        private String descricao;
+        private Long clienteId;
 
-            Optional<Chamado> chamadoOpt = chamadoRepository.findById(id);
-            if (!chamadoOpt.isPresent()) {
-                return ResponseEntity.notFound().build();
-            }
+        public String getTitulo() { return titulo; }
+        public void setTitulo(String titulo) { this.titulo = titulo; }
 
-            Chamado chamado = chamadoOpt.get();
-            try {
-                Chamado.Status status = Chamado.Status.valueOf(novoStatus);
-                chamado.setStatus(status);
-                chamadoRepository.save(chamado);
-                return ResponseEntity.ok(Collections.singletonMap("mensagem", "Status atualizado com sucesso"));
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body(Collections.singletonMap("erro", "Status inválido"));
-            }
+        public String getDescricao() { return descricao; }
+        public void setDescricao(String descricao) { this.descricao = descricao; }
 
-        } catch (Exception e) {
-            System.out.println("❌ ERRO AO ATUALIZAR STATUS:");
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Collections.singletonMap("erro", e.getMessage()));
-        }
+        public Long getClienteId() { return clienteId; }
+        public void setClienteId(Long clienteId) { this.clienteId = clienteId; }
     }
 }

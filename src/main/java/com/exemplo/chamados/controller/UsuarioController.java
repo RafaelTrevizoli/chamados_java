@@ -2,39 +2,53 @@ package com.exemplo.chamados.controller;
 
 import com.exemplo.chamados.model.Usuario;
 import com.exemplo.chamados.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @PostMapping("/cadastro")
-    public ResponseEntity<?> cadastrar(@RequestBody Usuario usuario) {
-        if (usuario.getEmail() == null || usuario.getSenha() == null) {
-            return ResponseEntity.badRequest().body(Map.of("erro","Email e senha são obrigatórios"));
-        }
-        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("erro","Email já cadastrado"));
-        }
-        return ResponseEntity.ok(usuarioRepository.save(usuario));
+    public UsuarioController(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
+    // ✅ Cadastro
+    @PostMapping("/register")
+    public ResponseEntity<?> registrarUsuario(@RequestBody Usuario usuario) {
+        try {
+            // Verifica se o email já existe
+            Optional<Usuario> existente = usuarioRepository.findByEmail(usuario.getEmail());
+            if (existente.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail já cadastrado.");
+            }
+
+            Usuario novo = usuarioRepository.save(usuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(novo);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao cadastrar: " + e.getMessage());
+        }
+    }
+
+    // ✅ Login
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> payload) {
-        String email = payload.get("email");
-        String senha = payload.get("senha");
-        return usuarioRepository.findByEmail(email)
-            .filter(u -> u.getSenha().equals(senha))
-            .<ResponseEntity<?>>map(ResponseEntity::ok)
-            .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("erro","Credenciais inválidas")));
+    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+        try {
+            Optional<Usuario> existente = usuarioRepository.findByEmail(usuario.getEmail());
+            if (existente.isPresent() && existente.get().getSenha().equals(usuario.getSenha())) {
+                return ResponseEntity.ok(existente.get());
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao logar: " + e.getMessage());
+        }
     }
 }
