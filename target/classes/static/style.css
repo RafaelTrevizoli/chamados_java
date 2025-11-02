@@ -7,7 +7,8 @@ html, body {
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #e0eafc, #cfdef3);
+    background-color: #1e1e2f;
+    color: #f5f5f5;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -20,23 +21,23 @@ main {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    padding: 6rem 1rem 5rem 1rem; /* espaço para navbar e footer */
+    padding: 6rem 1rem 5rem 1rem;
     display: flex;
     justify-content: center;
 }
 
 .container {
-    background: #fff;
+    background-color: #2c2c3c;
     padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     width: 100%;
     max-width: 1100px;
     box-sizing: border-box;
 }
 
 h1, h2, h3 {
-    color: #333;
+    color: #2196f3;
     margin-top: 0;
 }
 
@@ -45,9 +46,11 @@ input, select, textarea {
     width: 100%;
     margin-bottom: 1rem;
     padding: 0.75rem;
-    border: 1px solid #ccc;
+    border: 1px solid #555;
     border-radius: 8px;
     font-size: 1rem;
+    background-color: #3c3c4c;
+    color: #f5f5f5;
     box-sizing: border-box;
 }
 
@@ -58,7 +61,7 @@ textarea {
 button.primary {
     width: 100%;
     padding: 0.75rem;
-    background: linear-gradient(to right, #00b09b, #96c93d);
+    background-color: #2196f3;
     border: none;
     color: #fff;
     border-radius: 8px;
@@ -68,10 +71,10 @@ button.primary {
 }
 
 button.primary:hover {
-    opacity: 0.9;
+    background-color: #1769aa;
 }
 
-/* ======== CHAMADOS WRAPPER (DUAS COLUNAS) ======== */
+/* ======== CHAMADOS WRAPPER ======== */
 .chamados-wrapper {
     display: flex;
     gap: 2rem;
@@ -107,79 +110,24 @@ button.primary:hover {
 }
 
 .chamado {
-    background: #fff;
+    background-color: #3c3c4c;
     padding: 1.25rem;
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     width: 100%;
     box-sizing: border-box;
 }
 
 .chamado h3 {
     margin: 0 0 0.5rem 0;
-    color: #333;
+    color: #2196f3;
     font-size: 1.15rem;
 }
 
 .chamado p {
     margin: 0.3rem 0;
-    color: #555;
+    color: #ccc;
     font-size: 0.95rem;
-}
-
-/* ======== NAVBAR ======== */
-.navbar {
-    width: 100%;
-    background: linear-gradient(to right, #00b09b, #96c93d);
-    color: #fff;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    box-sizing: border-box;
-}
-
-.navbar .brand {
-    font-weight: 600;
-    font-size: 1.25rem;
-}
-
-.navbar nav {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.navbar a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 500;
-    transition: opacity 0.3s;
-}
-
-.navbar a:hover {
-    opacity: 0.85;
-}
-
-/* ======== FOOTER ======== */
-footer {
-    width: 100%;
-    text-align: center;
-    padding: 1rem;
-    background: #f5f5f5;
-    color: #555;
-    font-size: 0.9rem;
-    border-top: 1px solid #ddd;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    box-sizing: border-box;
 }
 
 /* ======== RESPONSIVIDADE ======== */
@@ -198,22 +146,5 @@ footer {
 
     .lista-section h2 {
         text-align: center;
-    }
-
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .navbar nav {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;
-    }
-
-    footer {
-        font-size: 0.8rem;
-        padding: 0.8rem;
     }
 }

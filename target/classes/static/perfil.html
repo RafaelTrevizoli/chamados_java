@@ -1,145 +1,211 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Meu Perfil</title>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/style.css" />
+    <title>Perfil - Sistema de Chamados</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+
     <style>
         body {
+          background-color: #1e1e2f;
           font-family: Arial, sans-serif;
-          background: linear-gradient(to right, #1d1f27, #2e3241); /* cinza escuro espacial */
-          color: #fff;
-          min-height: 100vh;
-          margin: 0;
+          color: #f5f5f5;
           display: flex;
           align-items: center;
           justify-content: center;
+          height: 100vh;
+          margin: 0;
         }
 
         .container {
-          background: #2e3241;
+          background-color: #2c2c3c;
           padding: 30px;
           border-radius: 12px;
-          box-shadow: 0 0 15px rgba(0,0,0,0.4);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
           width: 400px;
-          max-width: 90%;
         }
 
-        h2 {
+        h1 {
           text-align: center;
+          color: #2196f3;
           margin-bottom: 20px;
-          color: #00aaff;
         }
 
-        label {
-          display: block;
-          margin: 12px 0 4px;
-          font-weight: bold;
-          color: #ccc;
+        input, button {
+          width: 100%;
+          padding: 10px;
+          margin-top: 12px;
+          border-radius: 6px;
+          border: none;
         }
 
         input {
-          width: 100%;
-          padding: 10px;
-          border-radius: 6px;
-          border: 1px solid #555;
-          background-color: #1f222b;
-          color: #fff;
+          background-color: #3c3c4c;
+          color: #f5f5f5;
         }
 
         button {
-          margin-top: 20px;
-          width: 100%;
-          padding: 12px;
-          border: none;
-          background-color: #00aaff;
+          background-color: #2196f3;
           color: white;
-          font-size: 16px;
-          font-weight: bold;
-          border-radius: 6px;
           cursor: pointer;
         }
 
         button:hover {
-          background-color: #0088cc;
+          background-color: #1769aa;
         }
+
+        .sair {
+          margin-top: 20px;
+          text-align: center;
+        }
+
+        .sair a {
+          color: #90caf9;
+          text-decoration: none;
+        }
+
+         .painel-container {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: center;
+          gap: 2rem;
+          margin-top: 2rem;
+        }
+
+        .card {
+          background-color: #3c3c4c;
+          border-radius: 12px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+          width: 260px;
+          height: 150px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-decoration: none;
+          color: #f5f5f5;
+          transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .card h2 {
+          margin: 0;
+          font-size: 1.2rem;
+          color: #2196f3;
+          text-align: center;
+        }
+
+        .card p {
+          margin-top: 0.5rem;
+          font-size: 0.95rem;
+          color: #ccc;
+          text-align: center;
+        }
+
+        @media (max-width: 480px) {
+          .card {
+            width: 90%;
+          }
+        }
+
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Meu Perfil</h2>
-    <form id="formPerfil">
-        <label for="nome">Nome:</label>
-        <input type="text" id="nome" name="nome" required />
-
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
-
-        <label for="senha">Senha:</label>
-        <input type="password" id="senha" name="senha" required />
-
-        <button type="submit">Salvar Alterações</button>
-    </form>
+    <h1>Meu Perfil</h1>
+    <input type="text" id="nome" placeholder="Nome completo" />
+    <input type="email" id="email" placeholder="E-mail" />
+    <input type="password" id="senha" placeholder="Senha" />
+    <button id="btnSalvar">Salvar alterações</button>
+    <div class="sair">
+        <a href="#" onclick="logout()">Sair da conta</a>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script>
     const usuario = JSON.parse(localStorage.getItem("usuario"));
+    const nomeInput = document.getElementById("nome");
+    const emailInput = document.getElementById("email");
+    const senhaInput = document.getElementById("senha");
 
     if (!usuario || !usuario.id) {
-      alert("Você não está logado. Faça login novamente.");
+      Toastify({
+        text: "Erro ao carregar perfil. Faça login novamente.",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: { background: "#ff5f6d" }
+      }).showToast();
       window.location.href = "/login.html";
+    } else {
+      nomeInput.value = usuario.nome;
+      emailInput.value = usuario.email;
+      senhaInput.value = usuario.senha;
     }
 
-    const userId = usuario.id;
+    document.getElementById("btnSalvar").addEventListener("click", async () => {
+      const nome = nomeInput.value.trim();
+      const email = emailInput.value.trim();
+      const senha = senhaInput.value.trim();
 
-    async function carregarPerfil() {
-      try {
-        const res = await fetch(`http://localhost:8080/api/usuarios/${userId}`);
-        if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
-
-        const data = await res.json();
-
-        document.getElementById("nome").value = data.nome ?? "";
-        document.getElementById("email").value = data.email ?? "";
-        document.getElementById("senha").value = data.senha ?? "";
-
-      } catch (err) {
-        console.error("Erro ao carregar perfil:", err);
-        alert("Erro ao carregar perfil. Faça login novamente.");
-        localStorage.clear();
-        window.location.href = "/login.html";
+      if (!nome || !email || !senha) {
+        Toastify({
+          text: "Preencha todos os campos!",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          style: { background: "#ff5f6d" }
+        }).showToast();
+        return;
       }
-    }
-
-    document.getElementById("formPerfil").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const dados = {
-        nome: document.getElementById("nome").value,
-        email: document.getElementById("email").value,
-        senha: document.getElementById("senha").value
-      };
 
       try {
-        const res = await fetch(`http://localhost:8080/api/usuarios/${userId}`, {
+        const response = await fetch(`/api/usuarios/${usuario.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dados)
+          body: JSON.stringify({
+            nome,
+            email,
+            senha,
+            nivel: usuario.nivel
+          }),
         });
 
-        if (!res.ok) throw new Error("Erro ao atualizar perfil");
+        if (!response.ok) throw new Error("Erro ao atualizar.");
 
-        const atualizado = await res.json();
+        const atualizado = await response.json();
         localStorage.setItem("usuario", JSON.stringify(atualizado));
-        alert("Perfil atualizado com sucesso!");
-      } catch (err) {
-        console.error(err);
-        alert("Erro ao atualizar perfil.");
+
+        Toastify({
+          text: "Perfil atualizado com sucesso!",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          style: { background: "#00b09b" }
+        }).showToast();
+      } catch (error) {
+        Toastify({
+          text: "Erro ao atualizar o perfil.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          style: { background: "#ff5f6d" }
+        }).showToast();
       }
     });
 
-    carregarPerfil();
+    function logout() {
+      localStorage.removeItem("usuario");
+      window.location.href = "/login.html";
+    }
 </script>
 </body>
 </html>

@@ -2,80 +2,209 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Painel Principal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel Principal - Sistema de Chamados</title>
 
     <!-- CSS Global -->
     <link rel="stylesheet" href="/style.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 
     <!-- Toastify -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <style>
-        /* ======== ESTILO ESPECÍFICO DO PAINEL ======== */
+        /* ======== ESTILO DO TEMA ESCURO ======== */
+        body {
+          background-color: #1e1e2f;
+          color: #f5f5f5;
+          font-family: 'Poppins', sans-serif;
+          margin: 0;
+          padding: 0;
+        }
+
+        main {
+          flex: 1;
+          width: 100%;
+          padding: 6rem 1rem 5rem 1rem;
+          display: flex;
+          justify-content: center;
+          box-sizing: border-box;
+        }
+
+        .container {
+          background-color: #2c2c3c;
+          padding: 2rem;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          max-width: 1100px;
+          width: 100%;
+          box-sizing: border-box;
+          text-align: center;
+        }
+
+        h1 {
+          color: #2196f3;
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          color: #ccc;
+          margin-bottom: 2rem;
+        }
+
+        /* ======== CARDS DO PAINEL ======== */
         .painel-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            margin-top: 2rem;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: center;
+          gap: 2rem;
+          margin-top: 2rem;
         }
 
         .card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 260px;
-            height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-            color: #333;
-            transition: transform 0.2s ease, box-shadow 0.3s ease;
+          background-color: #3c3c4c;
+          border-radius: 12px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+          width: 260px;
+          height: 150px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-decoration: none;
+          color: #f5f5f5;
+          transition: transform 0.2s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+          transform: translateY(-5px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
         }
 
         .card h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: #333;
-            text-align: center;
+          margin: 0;
+          font-size: 1.2rem;
+          color: #2196f3;
+          text-align: center;
         }
 
         .card p {
-            margin-top: 0.5rem;
-            font-size: 0.95rem;
-            color: #555;
-            text-align: center;
+          margin-top: 0.5rem;
+          font-size: 0.95rem;
+          color: #ccc;
+          text-align: center;
         }
 
         @media (max-width: 480px) {
-            .card {
-                width: 90%;
-            }
+          .card {
+            width: 90%;
+          }
+        }
+
+        /* ======== NAVBAR ======== */
+        header.navbar {
+          width: 100%;
+          background-color: #2c2c3c;
+          color: #f5f5f5;
+          padding: 1rem 2rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: fixed;
+          top: 0;
+          left: 0;
+          z-index: 1000;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+          box-sizing: border-box;
+        }
+
+        .navbar .brand {
+          font-weight: 600;
+          font-size: 1.25rem;
+          color: #2196f3;
+        }
+
+        .navbar nav {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .navbar a {
+          color: #f5f5f5;
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+          color: #90caf9;
+        }
+
+        .logout-btn {
+          background-color: #2196f3;
+          color: #fff;
+          padding: 0.4rem 0.8rem;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+          background-color: #1769aa;
+        }
+
+        @media (max-width: 768px) {
+          .navbar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+
+          .navbar nav {
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+          }
+        }
+
+        /* ======== FOOTER ======== */
+        footer {
+          width: 100%;
+          text-align: center;
+          padding: 1rem;
+          background-color: #2c2c3c;
+          color: #aaa;
+          font-size: 0.9rem;
+          border-top: 1px solid #444;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          box-sizing: border-box;
+          z-index: 999;
         }
     </style>
 </head>
 
 <body>
-<!-- Navbar dinâmica -->
-<div id="navbar"></div>
+<!-- NAVBAR -->
+<header class="navbar">
+    <div class="brand">Sistema de Chamados</div>
+    <nav>
+        <a href="/painel.html">Painel</a>
+        <a href="/chamados.html">Meus Chamados</a>
+        <a href="/perfil.html">Perfil</a>
+        <button id="logoutBtn" class="logout-btn">Sair</button>
+    </nav>
+</header>
 
-<!-- Conteúdo -->
+<!-- CONTEÚDO -->
 <main>
     <div class="container">
         <h1>Bem-vindo ao Sistema de Chamados</h1>
-        <p style="text-align:center; margin-bottom: 2rem;">
-            Escolha uma das opções abaixo para continuar:
-        </p>
+        <p>Escolha uma das opções abaixo para continuar:</p>
 
         <div class="painel-container">
             <a href="/chamados.html" class="card">
@@ -91,15 +220,38 @@
     </div>
 </main>
 
-<!-- Footer dinâmico -->
-<div id="footer"></div>
+<!-- FOOTER -->
+<footer>
+    © 2025 Sistema de Chamados - Desenvolvido por Rafael Trevizoli
+</footer>
 
-<!-- Scripts -->
-<script src="/script/includes.js"></script>
-
+<!-- SCRIPT -->
 <script>
-    const usuario = JSON.parse(localStorage.getItem('usuario'));
-    if (!usuario) window.location.href = '/login.html';
+    // Verifica login
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      Toastify({
+        text: "Sessão expirada. Faça login novamente.",
+        duration: 2500,
+        gravity: "top",
+        position: "right",
+        style: { background: "#ff5f6d" },
+      }).showToast();
+      window.location.href = "/login.html";
+    }
+
+    // Logout
+    document.getElementById("logoutBtn")?.addEventListener("click", () => {
+      localStorage.clear();
+      Toastify({
+        text: "Logout realizado!",
+        duration: 2000,
+        gravity: "top",
+        position: "right",
+        style: { background: "#2196f3" },
+      }).showToast();
+      setTimeout(() => (window.location.href = "/login.html"), 1500);
+    });
 </script>
 </body>
 </html>
