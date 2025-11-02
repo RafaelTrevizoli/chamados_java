@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Logout</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+          background-color: #1e1e2f;
+          color: #f0f0f0;
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
+
+        .container {
+          background-color: #2e2e3e;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+          text-align: center;
+        }
+
+        h2 {
+          margin-bottom: 20px;
+          color: #2196f3;
+        }
+
+        button {
+          padding: 12px 20px;
+          font-size: 16px;
+          background-color: #2196f3;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+
+        button:hover {
+          background-color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Deseja sair?</h2>
+    <button onclick="logout()">Sair</button>
+</div>
+
+<script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "/login.html";
+    }
+</script>
+</body>
+</html>

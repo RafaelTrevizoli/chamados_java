@@ -5,82 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cadastro - Sistema de Chamados</title>
 
-    <!-- Estilos -->
-    <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
-
-    <!-- Toastify -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #1e1e2f;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          color: #f0f0f0;
+        }
+
+        .container {
+          background-color: #2e2e3e;
+          padding: 30px;
+          border-radius: 10px;
+          width: 350px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+          text-align: center;
+        }
+
+        h1 {
+          margin-bottom: 20px;
+          color: #2196f3;
+        }
+
+        input {
+          width: 100%;
+          padding: 12px;
+          margin: 10px 0;
+          border: none;
+          border-radius: 6px;
+          background-color: #444;
+          color: #f0f0f0;
+        }
+
+        button {
+          width: 100%;
+          padding: 12px;
+          background-color: #2196f3;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+
+        button:hover {
+          background-color: #1976d2;
+        }
+
+        a {
+          color: #2196f3;
+          text-decoration: none;
+        }
+    </style>
 </head>
+<body>
+<div class="container">
+    <h1>Cadastro</h1>
 
-<body class="auth-page">
-<main>
-    <div class="container">
-        <h1>Cadastro</h1>
+    <input type="text" id="nome" placeholder="Nome completo" />
+    <input type="email" id="email" placeholder="E-mail" />
+    <input type="password" id="senha" placeholder="Senha" />
+    <button id="btnCadastro">Registrar</button>
 
-        <input type="text" id="nome" placeholder="Nome completo" />
-        <input type="email" id="email" placeholder="E-mail" />
-        <input type="password" id="senha" placeholder="Senha" />
-        <button id="btnCadastro" class="primary">Registrar</button>
-
-        <p style="text-align:center; margin-top:1rem;">
-            Já possui conta?
-            <a href="/login.html" style="color:#00b09b; text-decoration:none;">Faça login</a>
-        </p>
-    </div>
-</main>
+    <p style="margin-top: 1rem;">
+        Já possui conta? <a href="/login.html">Faça login</a>
+    </p>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const nome = document.getElementById("nome");
-        const email = document.getElementById("email");
-        const senha = document.getElementById("senha");
-        const btnCadastro = document.getElementById("btnCadastro");
+      const nome = document.getElementById("nome");
+      const email = document.getElementById("email");
+      const senha = document.getElementById("senha");
+      const btnCadastro = document.getElementById("btnCadastro");
 
-        btnCadastro.addEventListener("click", async () => {
-            if (!nome.value.trim() || !email.value.trim() || !senha.value.trim()) {
-                Toastify({
-                    text: "Preencha todos os campos!",
-                    duration: 2500,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                }).showToast();
-                return;
-            }
+      btnCadastro.addEventListener("click", async () => {
+        if (!nome.value.trim() || !email.value.trim() || !senha.value.trim()) {
+          Toastify({
+            text: "Preencha todos os campos!",
+            duration: 2500,
+            gravity: "top",
+            position: "right",
+            style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+          }).showToast();
+          return;
+        }
 
-            try {
-                const res = await fetch("/api/usuarios/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        nome: nome.value,
-                        email: email.value,
-                        senha: senha.value
-                    })
-                });
+        try {
+          const res = await fetch("/api/usuarios/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nome: nome.value,
+              email: email.value,
+              senha: senha.value
+            })
+          });
 
-                if (!res.ok) throw new Error(res.status);
+          if (!res.ok) throw new Error(res.status);
+          const usuario = await res.json();
 
-                Toastify({
-                    text: "Cadastro realizado com sucesso!",
-                    duration: 2000,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
-                }).showToast();
+          localStorage.setItem("usuarioId", usuario.id);
+          localStorage.setItem("usuario", JSON.stringify(usuario));
 
-                setTimeout(() => (window.location.href = "/login.html"), 1500);
-            } catch (err) {
-                Toastify({
-                    text: "Erro ao registrar. Verifique os dados.",
-                    duration: 2500,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                }).showToast();
-            }
-        });
+          Toastify({
+            text: "Cadastro realizado com sucesso!",
+            duration: 2000,
+            gravity: "top",
+            position: "right",
+            style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+          }).showToast();
+
+          setTimeout(() => (window.location.href = "/perfil.html"), 1500);
+        } catch (err) {
+          Toastify({
+            text: "Erro ao registrar. Verifique os dados.",
+            duration: 2500,
+            gravity: "top",
+            position: "right",
+            style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+          }).showToast();
+        }
+      });
     });
 </script>
 </body>

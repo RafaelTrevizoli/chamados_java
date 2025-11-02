@@ -4,80 +4,93 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Sistema de Chamados</title>
-
-    <!-- Estilos -->
-    <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
-
-    <!-- Toastify -->
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        body {
+          background-color: #1e1e2f;
+          font-family: Arial, sans-serif;
+          color: #f5f5f5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+        }
+        .container {
+          background-color: #2c2c3c;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+          width: 400px;
+        }
+        h1 {
+          text-align: center;
+          color: #2196f3;
+        }
+        input, button {
+          width: 100%;
+          padding: 10px;
+          margin-top: 12px;
+          border-radius: 6px;
+          border: none;
+        }
+        input {
+          background-color: #3c3c4c;
+          color: #f5f5f5;
+        }
+        button {
+          background-color: #2196f3;
+          color: white;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #1769aa;
+        }
+        p {
+          text-align: center;
+          margin-top: 16px;
+        }
+        a {
+          color: #90caf9;
+          text-decoration: none;
+        }
+    </style>
 </head>
+<body>
+<div class="container">
+    <h1>Login</h1>
+    <input type="email" id="email" placeholder="E-mail" />
+    <input type="password" id="senha" placeholder="Senha" />
+    <button id="btnLogin">Entrar</button>
+    <p>
+        Ainda não tem conta? <a href="/cadastro.html">Cadastre-se</a>
+    </p>
+</div>
 
-<body class="auth-page">
-<main>
-    <div class="container">
-        <h1>Login</h1>
-
-        <input type="email" id="email" placeholder="E-mail" />
-        <input type="password" id="senha" placeholder="Senha" />
-        <button id="btnLogin" class="primary">Entrar</button>
-
-        <p style="text-align:center; margin-top:1rem;">
-            Ainda não tem conta?
-            <a href="/cadastro.html" style="color:#00b09b; text-decoration:none;">Cadastre-se</a>
-        </p>
-    </div>
-</main>
-
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const email = document.getElementById("email");
-        const senha = document.getElementById("senha");
-        const btnLogin = document.getElementById("btnLogin");
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
 
-        btnLogin.addEventListener("click", async () => {
-            if (!email.value.trim() || !senha.value.trim()) {
-                Toastify({
-                    text: "Preencha todos os campos!",
-                    duration: 2500,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                }).showToast();
-                return;
-            }
+      if (!email || !senha) {
+        Toastify({ text: "Preencha todos os campos!", duration: 3000, style: { background: "#ff5f6d" }}).showToast();
+        return;
+      }
 
-            try {
-                const res = await fetch("/api/usuarios/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: email.value, senha: senha.value })
-                });
-
-                if (!res.ok) throw new Error(res.status);
-                const usuario = await res.json();
-
-                localStorage.setItem("usuario", JSON.stringify(usuario));
-
-                Toastify({
-                    text: "Login realizado com sucesso!",
-                    duration: 2000,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
-                }).showToast();
-
-                setTimeout(() => (window.location.href = "/painel.html"), 1500);
-            } catch (err) {
-                Toastify({
-                    text: "E-mail ou senha incorretos.",
-                    duration: 2500,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                }).showToast();
-            }
+      try {
+        const res = await fetch("/api/usuarios/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, senha })
         });
+
+        if (!res.ok) throw new Error("Login inválido");
+        const usuario = await res.json();
+        localStorage.setItem("usuario", JSON.stringify(usuario));
+        window.location.href = "/painel.html";
+      } catch (err) {
+        Toastify({ text: "Erro no login!", duration: 3000, style: { background: "#ff5f6d" }}).showToast();
+      }
     });
 </script>
 </body>

@@ -2,10 +2,11 @@ package com.exemplo.chamados.controller;
 
 import com.exemplo.chamados.model.Usuario;
 import com.exemplo.chamados.repository.UsuarioRepository;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -13,42 +14,56 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class UsuarioController {
 
-    private final UsuarioRepository usuarioRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
-    public UsuarioController(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    @GetMapping
+    public List<Usuario> listar() {
+        return usuarioRepository.findAll();
     }
 
-    // ✅ Cadastro
     @PostMapping("/register")
-    public ResponseEntity<?> registrarUsuario(@RequestBody Usuario usuario) {
-        try {
-            // Verifica se o email já existe
-            Optional<Usuario> existente = usuarioRepository.findByEmail(usuario.getEmail());
-            if (existente.isPresent()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail já cadastrado.");
-            }
-
-            Usuario novo = usuarioRepository.save(usuario);
-            return ResponseEntity.status(HttpStatus.CREATED).body(novo);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Erro ao cadastrar: " + e.getMessage());
-        }
+    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
+        return ResponseEntity.ok(usuarioRepository.save(usuario));
     }
 
-    // ✅ Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
-        try {
-            Optional<Usuario> existente = usuarioRepository.findByEmail(usuario.getEmail());
-            if (existente.isPresent() && existente.get().getSenha().equals(usuario.getSenha())) {
-                return ResponseEntity.ok(existente.get());
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Erro ao logar: " + e.getMessage());
+        Optional<Usuario> user = usuarioRepository.findByEmail(usuario.getEmail());
+
+        if (user.isPresent() && user.get().getSenha().equals(usuario.getSenha())) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(401).body("Credenciais inválidas");
         }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> buscarPorId(@PathVariable("id") Long id) {
+        Optional<Usuario> usuario = usuarioRepository.findById(id);
+        return usuario.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Usuario> atualizar(@PathVariable("id") Long id, @RequestBody Usuario dados) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+        if (usuarioOptional.isPresent()) {
+            Usuario usuario = usuarioOptional.get();
+            usuario.setNome(dados.getNome());
+            usuario.setEmail(dados.getEmail());
+            usuario.setSenha(dados.getSenha());
+            usuario.setNivel(dados.getNivel());
+            return ResponseEntity.ok(usuarioRepository.save(usuario));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
+        if (usuarioRepository.existsById(id)) {
+            usuarioRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
