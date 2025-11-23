@@ -13,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body>
+
 <!-- Navbar -->
 <div id="navbar"></div>
 
@@ -22,9 +23,11 @@
         <h1>Meus Chamados</h1>
 
         <div class="chamados-wrapper">
+
             <!-- Coluna esquerda: Formulário -->
             <div class="form-section">
-                <input id="titulo" placeholder="Título do chamado" />
+                <h2 style="margin-bottom: .8rem;">Criar novo chamado</h2>
+                <input id="titulo" placeholder="Título do chamado"/>
                 <textarea id="descricao" placeholder="Descrição detalhada"></textarea>
                 <button id="btnCriar" class="primary">Criar Chamado</button>
             </div>
@@ -44,17 +47,17 @@
 <!-- Scripts -->
 <script src="/script/includes.js"></script>
 <script>
-    // Protege rota (exige login)
+    // Protege rota
     const usuario = JSON.parse(localStorage.getItem('usuario'));
     if (!usuario) window.location.href = '/login.html';
 
-    // Criar chamado
     document.addEventListener("DOMContentLoaded", () => {
         const btnCriar = document.getElementById("btnCriar");
         const titulo = document.getElementById("titulo");
         const descricao = document.getElementById("descricao");
         const lista = document.getElementById("listaChamados");
 
+        // Carregar chamados do usuário
         async function carregarChamados() {
             try {
                 const res = await fetch(`/api/chamados/cliente/${usuario.id}`);
@@ -65,19 +68,29 @@
                 chamados.forEach(c => {
                     const item = document.createElement("div");
                     item.classList.add("chamado");
+
                     item.innerHTML = `
-              <h3>${c.titulo}</h3>
-              <p><strong>Status:</strong> ${c.status}</p>
-              <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString()}</p>
-              <p>${c.descricao}</p>
-            `;
+                        <h3>
+                            <a href="/detalhes.html?id=${c.id}" style="text-decoration:none;color:#2196f3;">
+                                ${c.titulo}
+                            </a>
+                        </h3>
+
+                        <p><strong>Status:</strong> ${c.status}</p>
+                        <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString()}</p>
+
+                        <p style="margin-top:.5rem;">${c.descricao}</p>
+                    `;
+
                     lista.appendChild(item);
                 });
             } catch (err) {
-                lista.innerHTML = `<p style="color:red;">Erro ao buscar chamados. Código: ${err.message}</p>`;
+                lista.innerHTML =
+                    `<p style="color:red;">Erro ao buscar chamados. Código: ${err.message}</p>`;
             }
         }
 
+        // Criar chamado
         btnCriar.addEventListener("click", async () => {
             if (!titulo.value.trim() || !descricao.value.trim()) {
                 Toastify({
@@ -102,8 +115,10 @@
                 });
 
                 if (!res.ok) throw new Error(res.status);
+
                 titulo.value = "";
                 descricao.value = "";
+
                 Toastify({
                     text: "Chamado criado com sucesso!",
                     duration: 2000,

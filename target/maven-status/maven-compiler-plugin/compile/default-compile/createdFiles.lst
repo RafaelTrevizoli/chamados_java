@@ -1,10 +1,10 @@
 com/exemplo/chamados/model/Chamado.class
-com/exemplo/chamados/controller/UsuarioController.class
 com/exemplo/chamados/model/Usuario.class
+com/exemplo/chamados/controller/ChamadoController$CriarChamadoRequest.class
 com/exemplo/chamados/repository/UsuarioRepository.class
 com/exemplo/chamados/model/Usuario$NivelUsuario.class
 com/exemplo/chamados/controller/ChamadoController.class
 com/exemplo/chamados/SistemaChamadosApplication.class
 com/exemplo/chamados/model/Chamado$Status.class
-com/exemplo/chamados/controller/ChamadoController$ChamadoRequest.class
 com/exemplo/chamados/repository/ChamadoRepository.class
+com/exemplo/chamados/controller/UsuarioController.class

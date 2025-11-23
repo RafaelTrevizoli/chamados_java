@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Chamado</title>
+
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        /* CARD PRINCIPAL DO DETALHE */
+        .detalhe-card {
+            background-color: #3c3c4c;
+            padding: 1.8rem;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 1.5rem;
+        }
+
+        .detalhe-item {
+            margin-bottom: 1rem;
+            color: #d8d8d8;
+            font-size: 1rem;
+        }
+
+        .detalhe-item strong {
+            color: #90caf9;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #555;
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar"></div>
+
+<!-- CONTEÚDO -->
+<main>
+    <div class="container">
+        <h1>Detalhes do Chamado</h1>
+
+        <div id="conteudo" class="detalhe-card">
+            <!-- Detalhes serão carregados via JS -->
+        </div>
+
+        <button onclick="window.history.back()" class="primary" style="margin-top:2rem;">
+            Voltar
+        </button>
+    </div>
+</main>
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script src="/script/includes.js"></script>
+<script>
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) window.location.href = "/login.html";
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const conteudo = document.getElementById("conteudo");
+
+    async function carregar() {
+        try {
+            const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
+
+            if (!res.ok) {
+                conteudo.innerHTML = `
+                    <p style="color:#ff5f6d;">Erro ao carregar chamado (Código ${res.status})</p>
+                `;
+                return;
+            }
+
+            const c = await res.json();
+
+            const status = c.status ?? "Não informado";
+            const dataCriacao = c.dataCriacao
+                ? new Date(c.dataCriacao).toLocaleString()
+                : "Não informado";
+            const descricao = c.descricao ?? "Sem descrição";
+
+            conteudo.innerHTML = `
+                <h2 style="color:#2196f3;margin-bottom:1rem;">${c.titulo}</h2>
+
+                <p class="detalhe-item"><strong>Status:</strong> ${status}</p>
+                <p class="detalhe-item"><strong>Data de Abertura:</strong> ${dataCriacao}</p>
+
+                <hr>
+
+                <p class="detalhe-item" style="line-height:1.6;">${descricao}</p>
+            `;
+        } catch (error) {
+            conteudo.innerHTML = `
+                <p style="color:#ff5f6d;">Falha ao carregar informações.</p>
+            `;
+            console.error(error);
+        }
+    }
+
+    carregar();
+</script>
+
+</body>
+</html>
