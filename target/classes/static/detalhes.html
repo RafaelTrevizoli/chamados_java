@@ -10,56 +10,49 @@
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <style>
-        /* CARD PRINCIPAL DO DETALHE */
-        .detalhe-card {
+        .comentario {
             background-color: #3c3c4c;
-            padding: 1.8rem;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.25);
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: .8rem;
         }
-
-        .detalhe-item {
-            margin-bottom: 1rem;
-            color: #d8d8d8;
-            font-size: 1rem;
-        }
-
-        .detalhe-item strong {
-            color: #90caf9;
-        }
-
-        hr {
-            border: 0;
-            border-top: 1px solid #555;
-            margin: 1.5rem 0;
+        .comentario small {
+            color: #aaa;
         }
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
+<!-- NAVBAR -->
 <div id="navbar"></div>
 
-<!-- CONTEÚDO -->
 <main>
     <div class="container">
         <h1>Detalhes do Chamado</h1>
 
-        <div id="conteudo" class="detalhe-card">
-            <!-- Detalhes serão carregados via JS -->
+        <div id="conteudo"></div>
+
+        <!-- APENAS PARA ADMIN -->
+        <div id="adminArea" style="display:none; margin-top:2rem;">
+
+            <h2>Alterar Status</h2>
+            <select id="status">
+                <option value="ABERTO">ABERTO</option>
+                <option value="EM_ANDAMENTO">EM ANDAMENTO</option>
+                <option value="RESOLVIDO">RESOLVIDO</option>
+                <option value="FECHADO">FECHADO</option>
+            </select>
+            <button id="btnStatus" class="primary" style="margin-bottom:2rem;">Salvar</button>
+
+            <h2>Comentários</h2>
+            <div id="listaComentarios"></div>
+
+            <textarea id="novoComentario" placeholder="Escreva um comentário..."></textarea>
+            <button id="btnComentar" class="primary">Enviar Comentário</button>
         </div>
 
-        <button onclick="window.history.back()" class="primary" style="margin-top:2rem;">
-            Voltar
-        </button>
     </div>
 </main>
-
-<!-- Footer -->
-<div id="footer"></div>
 
 <script src="/script/includes.js"></script>
 <script>
@@ -68,46 +61,101 @@
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
+
     const conteudo = document.getElementById("conteudo");
+    const adminArea = document.getElementById("adminArea");
 
-    async function carregar() {
-        try {
-            const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
+    // se for admin, mostra os controles
+    if (usuario.nivel === "ADMIN") {
+        adminArea.style.display = "block";
+    }
 
-            if (!res.ok) {
-                conteudo.innerHTML = `
-                    <p style="color:#ff5f6d;">Erro ao carregar chamado (Código ${res.status})</p>
-                `;
-                return;
-            }
+    // ==============================
+    // CARREGAR DETALHES DO CHAMADO
+    // ==============================
+    async function carregarChamado() {
+        const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
+        const c = await res.json();
 
-            const c = await res.json();
+        conteudo.innerHTML = `
+            <h2>${c.titulo}</h2>
+            <p>${c.descricao}</p>
 
-            const status = c.status ?? "Não informado";
-            const dataCriacao = c.dataCriacao
-                ? new Date(c.dataCriacao).toLocaleString()
-                : "Não informado";
-            const descricao = c.descricao ?? "Sem descrição";
+            <p><strong>Status:</strong> ${c.status}</p>
+            <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString()}</p>
 
-            conteudo.innerHTML = `
-                <h2 style="color:#2196f3;margin-bottom:1rem;">${c.titulo}</h2>
+            <p><strong>Cliente:</strong> ${c.cliente.nome}</p>
+        `;
 
-                <p class="detalhe-item"><strong>Status:</strong> ${status}</p>
-                <p class="detalhe-item"><strong>Data de Abertura:</strong> ${dataCriacao}</p>
-
-                <hr>
-
-                <p class="detalhe-item" style="line-height:1.6;">${descricao}</p>
-            `;
-        } catch (error) {
-            conteudo.innerHTML = `
-                <p style="color:#ff5f6d;">Falha ao carregar informações.</p>
-            `;
-            console.error(error);
+        if (usuario.nivel === "ADMIN") {
+            document.getElementById("status").value = c.status;
+            carregarComentarios();
         }
     }
 
-    carregar();
+    // ==============================
+    // CARREGAR COMENTÁRIOS
+    // ==============================
+    async function carregarComentarios() {
+        const res = await fetch(`/api/comentarios/${id}`);
+        const lista = await res.json();
+
+        const div = document.getElementById("listaComentarios");
+        div.innerHTML = "";
+
+        lista.forEach(cm => {
+            const el = document.createElement("div");
+            el.classList.add("comentario");
+            el.innerHTML = `
+                <p>${cm.texto}</p>
+                <small>${new Date(cm.dataCriacao).toLocaleString()} - ${cm.autor.nome}</small>
+            `;
+            div.appendChild(el);
+        });
+    }
+
+    // ==============================
+    // SALVAR STATUS (somente admin)
+    // ==============================
+    document.getElementById("btnStatus")?.addEventListener("click", async () => {
+        const novoStatus = document.getElementById("status").value;
+
+        await fetch(`/api/chamados/${id}/status?adminId=${usuario.id}&status=${novoStatus}`, {
+            method: "PUT"
+        });
+
+        Toastify({
+            text: "Status atualizado!",
+            duration: 2000,
+            gravity: "top",
+            position: "right",
+            style: { background: "#00b09b" }
+        }).showToast();
+
+        carregarChamado();
+    });
+
+    // ==============================
+    // ENVIAR COMENTÁRIO (somente admin)
+    // ==============================
+    document.getElementById("btnComentar")?.addEventListener("click", async () => {
+        const texto = document.getElementById("novoComentario").value.trim();
+        if (!texto) return;
+
+        await fetch(`/api/comentarios?adminId=${usuario.id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                texto: texto,
+                chamado: { id: id }
+            })
+        });
+
+        document.getElementById("novoComentario").value = "";
+        carregarComentarios();
+    });
+
+    carregarChamado();
 </script>
 
 </body>

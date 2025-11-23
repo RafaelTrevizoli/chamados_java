@@ -3,5 +3,8 @@
 /home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/controller/UsuarioController.java
 /home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/controller/ChamadoController.java
 /home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/model/Usuario.java
+/home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/repository/ComentarioRepository.java
+/home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/controller/ComentarioController.java
 /home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/repository/ChamadoRepository.java
+/home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/model/Comentario.java
 /home/rafaelkonscca/projetos/chamados_java/src/main/java/com/exemplo/chamados/repository/UsuarioRepository.java

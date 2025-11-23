@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Chamados</title>
+
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        .chamado-item {
+            background-color: #3c3c4c;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        .comentario {
+            background-color: #3c3c4c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: .7rem;
+        }
+
+        .comentario small {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div id="navbar"></div>
+
+<main>
+    <div class="container">
+        <h1>Painel Administrativo</h1>
+
+        <h2>Chamados</h2>
+        <div id="listaChamados"></div>
+
+        <hr style="margin:2rem 0;border-color:#444;">
+
+        <h2>Detalhes do Chamado</h2>
+        <div id="detalhes"></div>
+
+        <h2>Alterar Status</h2>
+        <select id="status">
+            <option value="ABERTO">Aberto</option>
+            <option value="EM_ANDAMENTO">Em Andamento</option>
+            <option value="RESOLVIDO">Resolvido</option>
+            <option value="FECHADO">Fechado</option>
+        </select>
+        <button class="primary" id="btnSalvarStatus">Salvar Alteração</button>
+
+        <h2>Comentários</h2>
+        <div id="listaComentarios"></div>
+
+        <textarea id="novoComentario" placeholder="Digite um comentário..."></textarea>
+        <button class="primary" id="btnComentar">Enviar Comentário</button>
+
+    </div>
+</main>
+
+<div id="footer"></div>
+
+<script src="/script/includes.js"></script>
+<script>
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    if (!usuario || usuario.nivel !== "ADMIN") {
+        alert("Acesso negado");
+        window.location.href = "/login.html";
+    }
+
+    let chamadoSelecionado = null;
+
+    async function carregarChamados() {
+        const res = await fetch("/api/chamados");
+        const dados = await res.json();
+
+        const lista = document.getElementById("listaChamados");
+        lista.innerHTML = "";
+
+        dados.forEach(c => {
+            const div = document.createElement("div");
+            div.classList.add("chamado-item");
+            div.innerHTML = `
+                <h3 style="color:#2196f3;">${c.titulo}</h3>
+                <p><strong>Status:</strong> ${c.status}</p>
+                <p><strong>Cliente:</strong> ${c.cliente.nome}</p>
+            `;
+            div.onclick = () => abrirChamado(c.id);
+            lista.appendChild(div);
+        });
+    }
+
+    async function abrirChamado(id) {
+        chamadoSelecionado = id;
+
+        const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
+        const c = await res.json();
+
+        document.getElementById("detalhes").innerHTML = `
+            <h3>${c.titulo}</h3>
+            <p>${c.descricao}</p>
+            <p><strong>Status:</strong> ${c.status}</p>
+            <p><strong>Cliente:</strong> ${c.cliente.nome}</p>
+        `;
+
+        document.getElementById("status").value = c.status;
+
+        carregarComentarios(id);
+    }
+
+    async function carregarComentarios(id) {
+        const res = await fetch(`/api/comentarios/${id}`);
+        const lista = await res.json();
+
+        const div = document.getElementById("listaComentarios");
+        div.innerHTML = "";
+
+        lista.forEach(cm => {
+            const el = document.createElement("div");
+            el.classList.add("comentario");
+            el.innerHTML = `
+                <p>${cm.texto}</p>
+                <small>${new Date(cm.dataCriacao).toLocaleString()} - ${cm.autor.nome}</small>
+            `;
+            div.appendChild(el);
+        });
+    }
+
+    document.getElementById("btnSalvarStatus").onclick = async () => {
+        if (!chamadoSelecionado) return;
+
+        const status = document.getElementById("status").value;
+
+        await fetch(`/api/chamados/${chamadoSelecionado}/status?adminId=${usuario.id}&status=${status}`, {
+            method: "PUT"
+        });
+
+        Toastify({
+            text: "Status atualizado!",
+            duration: 2000,
+            style: { background: "#00b09b" }
+        }).showToast();
+
+        abrirChamado(chamadoSelecionado);
+        carregarChamados();
+    };
+
+    document.getElementById("btnComentar").onclick = async () => {
+        if (!chamadoSelecionado) return;
+
+        const texto = document.getElementById("novoComentario").value.trim();
+        if (texto === "") return;
+
+        await fetch(`/api/comentarios?adminId=${usuario.id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                texto: texto,
+                chamado: { id: chamadoSelecionado }
+            })
+        });
+
+        document.getElementById("novoComentario").value = "";
+        carregarComentarios(chamadoSelecionado);
+    };
+
+    carregarChamados();
+</script>
+</body>
+</html>
