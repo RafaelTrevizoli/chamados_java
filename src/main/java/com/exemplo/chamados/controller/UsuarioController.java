@@ -2,12 +2,12 @@ package com.exemplo.chamados.controller;
 
 import com.exemplo.chamados.model.Usuario;
 import com.exemplo.chamados.repository.UsuarioRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -29,44 +29,43 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
-        Optional<Usuario> user = usuarioRepository.findByEmail(usuario.getEmail());
 
-        if (user.isPresent() && user.get().getSenha().equals(usuario.getSenha())) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            return ResponseEntity.status(401).body("Credenciais inválidas");
-        }
+        Usuario u = usuarioRepository.findByEmail(usuario.getEmail())
+                .orElse(null);
+
+        if (u != null && u.getSenha().equals(usuario.getSenha()))
+            return ResponseEntity.ok(u);
+
+        return ResponseEntity.status(401).body("Credenciais inválidas");
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> buscarPorId(@PathVariable("id") Long id) {
-        Optional<Usuario> usuario = usuarioRepository.findById(id);
-        return usuario.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Usuario> buscar(@PathVariable Long id) {
+        return usuarioRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizar(
-            @PathVariable("id") Long id,
-            @RequestBody Usuario dados) {
+    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody Usuario dados) {
 
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
-        if (usuarioOptional.isPresent()) {
-            Usuario usuario = usuarioOptional.get();
-            usuario.setNome(dados.getNome());
-            usuario.setEmail(dados.getEmail());
-            usuario.setSenha(dados.getSenha());
-            usuario.setNivel(dados.getNivel());
-            return ResponseEntity.ok(usuarioRepository.save(usuario));
-        }
-        return ResponseEntity.notFound().build();
+        Usuario u = usuarioRepository.findById(id).orElse(null);
+        if (u == null) return ResponseEntity.notFound().build();
+
+        u.setNome(dados.getNome());
+        u.setEmail(dados.getEmail());
+        u.setSenha(dados.getSenha());
+        u.setNivel(dados.getNivel());
+
+        return ResponseEntity.ok(usuarioRepository.save(u));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
-        if (usuarioRepository.existsById(id)) {
-            usuarioRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+        if (!usuarioRepository.existsById(id))
+            return ResponseEntity.notFound().build();
+
+        usuarioRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

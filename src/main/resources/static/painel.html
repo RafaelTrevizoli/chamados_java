@@ -9,120 +9,154 @@
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 
-    <!-- Ícones -->
-    <link rel="stylesheet" href="https://unpkg.com/feather-icons/dist/feather.css">
+    <!-- Toastify -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <style>
-        /* Painel atualizado mantendo seu estilo */
+        /* Mantém o tema geral da sua aplicação (body/main/container já vêm do style.css) */
 
-        body {
-          background: linear-gradient(160deg, #1e1e2f 0%, #181824 100%);
-          color: #f5f5f5;
-          font-family: 'Poppins', sans-serif;
-          margin: 0;
-          padding: 0;
+        .painel-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
-        main {
-          flex: 1;
-          width: 100%;
-          padding: 6rem 1rem 5rem 1rem;
-          display: flex;
-          justify-content: center;
+        .painel-header h1 {
+            color: #2196f3;
+            margin-bottom: 0.3rem;
         }
 
-        .container {
-          background-color: #2c2c3c;
-          padding: 2rem;
-          border-radius: 12px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-          max-width: 1100px;
-          width: 100%;
+        .painel-header p {
+            color: #ccc;
+            margin: 0;
         }
 
-        h1 {
-          color: #2196f3;
-          margin-bottom: .2rem;
+        /* Grid de estatísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
-        #subinfo {
-          color: #aaa;
-          font-size: .95rem;
-          margin-bottom: 1.8rem;
+        .stat-card {
+            background-color: #3c3c4c;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100px;
         }
 
-        /* Cards */
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 1.5rem;
+        .stat-card h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .card {
-          background-color: #3c3c4c;
-          padding: 1.5rem;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          transition: .25s ease;
-          cursor: pointer;
+        .stat-card p {
+            margin: 0.4rem 0 0 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f5f5f5;
         }
 
-        .card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 0 14px rgba(33,150,243,.3);
+        .stat-card small {
+            margin-top: 0.25rem;
+            font-size: 0.8rem;
+            color: #999;
         }
 
-        .card-icon {
-          background-color: #2196f3;
-          padding: 0.7rem;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        /* Lista de últimos chamados */
+        .recent-section {
+            margin-top: 1rem;
         }
 
-        .card-icon i {
-          color: white;
+        .recent-section h2 {
+            margin-bottom: 0.8rem;
         }
 
-        .card h3 {
-          margin: 0;
-          font-size: 1.2rem;
-          color: #fff;
+        .recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
         }
 
-        .card p {
-          margin: .2rem 0 0 0;
-          font-size: .9rem;
-          color: #bbb;
+        .recent-item {
+            background-color: #3c3c4c;
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
-        /* Seção admin */
-        #adminMetrics {
-          margin-top: 2.5rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid #444;
+        .recent-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .metric-box {
-          background: #353545;
-          padding: 1.2rem;
-          border-radius: 10px;
-          text-align: center;
-          border-left: 4px solid #2196f3;
+        .recent-item-title {
+            font-size: 0.98rem;
+            font-weight: 500;
+            color: #2196f3;
         }
 
-        .metric-box h2 {
-          margin: 0;
-          font-size: 2rem;
-          color: #2196f3;
+        .recent-item-status {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            background-color: #444;
+            color: #eee;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
 
-        .metric-box span {
-          font-size: .9rem;
-          color: #ddd;
+        .recent-item-status.ABERTO {
+            background-color: #1565c0;
+        }
+        .recent-item-status.EM_ANDAMENTO {
+            background-color: #f9a825;
+        }
+        .recent-item-status.RESOLVIDO {
+            background-color: #2e7d32;
+        }
+        .recent-item-status.FECHADO {
+            background-color: #6d4c41;
+        }
+
+        .recent-item-meta {
+            font-size: 0.8rem;
+            color: #bbb;
+        }
+
+        .recent-item-desc {
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+
+        .recent-item a {
+            color: #90caf9;
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-top: 0.2rem;
+        }
+
+        .recent-item a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .recent-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -135,94 +169,184 @@
 <!-- CONTEÚDO -->
 <main>
     <div class="container">
-
-        <h1>Olá, <span id="nomeUsuario"></span> 👋</h1>
-        <p id="subinfo"></p>
-
-        <div class="dashboard-grid">
-            <div onclick="location.href='/chamados.html'" class="card">
-                <div class="card-icon"><i data-feather="file-text"></i></div>
-                <div>
-                    <h3>Meus Chamados</h3>
-                    <p>Crie e visualize seus chamados</p>
-                </div>
-            </div>
-
-            <div onclick="location.href='/perfil.html'" class="card">
-                <div class="card-icon"><i data-feather="user"></i></div>
-                <div>
-                    <h3>Meu Perfil</h3>
-                    <p>Gerencie suas informações pessoais</p>
-                </div>
-            </div>
+        <div class="painel-header">
+            <h1>Painel de Chamados</h1>
+            <p id="painelSubtitulo">Carregando informações...</p>
         </div>
 
-        <!-- Seção exclusiva para ADMIN -->
-        <div id="adminMetrics" style="display:none;">
-            <h2 style="margin-bottom:1rem;color:#2196f3;">Visão Geral do Sistema</h2>
-
-            <div class="dashboard-grid">
-                <div class="metric-box">
-                    <h2 id="mAbertos">0</h2>
-                    <span>Abertos</span>
-                </div>
-
-                <div class="metric-box">
-                    <h2 id="mAndamento">0</h2>
-                    <span>Em Andamento</span>
-                </div>
-
-                <div class="metric-box">
-                    <h2 id="mResolvidos">0</h2>
-                    <span>Resolvidos</span>
-                </div>
-
-                <div class="metric-box">
-                    <h2 id="mFechados">0</h2>
-                    <span>Fechados</span>
-                </div>
+        <!-- Estatísticas -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total de Chamados</h3>
+                <p id="statTotal">0</p>
+                <small>Quantidade total de chamados visíveis para você</small>
             </div>
-        </div>
 
+            <div class="stat-card">
+                <h3>Abertos</h3>
+                <p id="statAbertos">0</p>
+                <small>Chamados aguardando atendimento</small>
+            </div>
+
+            <div class="stat-card">
+                <h3>Em Andamento</h3>
+                <p id="statAndamento">0</p>
+                <small>Chamados sendo trabalhados</small>
+            </div>
+
+            <div class="stat-card">
+                <h3>Resolvidos / Fechados</h3>
+                <p id="statResolvidos">0</p>
+                <small>Chamados concluídos</small>
+            </div>
+        </section>
+
+        <!-- Últimos chamados -->
+        <section class="recent-section">
+            <h2>Últimos chamados</h2>
+            <div id="listaRecentes" class="recent-list">
+                <p style="color:#bbb;">Carregando...</p>
+            </div>
+        </section>
+
+        <!-- Ações principais -->
+        <section style="margin-top: 2rem; text-align: center;">
+            <a href="/chamados.html" class="primary" style="
+                display:inline-block;
+                padding:0.75rem 1.8rem;
+                border-radius:999px;
+                background:#2196f3;
+                color:#fff;
+                text-decoration:none;
+                font-weight:500;
+                box-shadow:0 3px 10px rgba(0,0,0,.4);
+                ">
+                Ir para Meus Chamados
+            </a>
+        </section>
     </div>
 </main>
 
+<!-- FOOTER -->
 <div id="footer"></div>
 
+<!-- SCRIPT GLOBAL -->
 <script src="/script/includes.js"></script>
-<script src="https://unpkg.com/feather-icons"></script>
-<script> feather.replace(); </script>
 
 <script>
     const usuario = JSON.parse(localStorage.getItem("usuario"));
-    if (!usuario) location.href = "/login.html";
 
-    document.getElementById("nomeUsuario").textContent = usuario.nome;
-    document.getElementById("subinfo").textContent =
-      "Você está logado como: " + usuario.nivel;
-
-    // ADMIN => mostrar métricas
-    if (usuario.nivel === "ADMIN") {
-        document.getElementById("adminMetrics").style.display = "block";
-        carregarMetricas();
+    if (!usuario) {
+        Toastify({
+            text: "Sessão expirada. Faça login novamente.",
+            duration: 2500,
+            gravity: "top",
+            position: "right",
+            style: { background: "#ff5f6d" },
+        }).showToast();
+        window.location.href = "/login.html";
     }
 
-    async function carregarMetricas() {
-        const res = await fetch("/api/chamados");
-        const dados = await res.json();
+    const isAdmin = usuario && usuario.nivel === "ADMIN";
 
-        document.getElementById("mAbertos").textContent =
-            dados.filter(c => c.status === "ABERTO").length;
+    const subtituloEl = document.getElementById("painelSubtitulo");
+    subtituloEl.textContent = isAdmin
+        ? "Você está vendo os chamados de todos os usuários (ADMIN)."
+        : "Você está vendo apenas os seus chamados.";
 
-        document.getElementById("mAndamento").textContent =
-            dados.filter(c => c.status === "EM_ANDAMENTO").length;
+    const statTotal = document.getElementById("statTotal");
+    const statAbertos = document.getElementById("statAbertos");
+    const statAndamento = document.getElementById("statAndamento");
+    const statResolvidos = document.getElementById("statResolvidos");
+    const listaRecentes = document.getElementById("listaRecentes");
 
-        document.getElementById("mResolvidos").textContent =
-            dados.filter(c => c.status === "RESOLVIDO").length;
+    async function carregarDashboard() {
+        try {
+            let url;
+            if (isAdmin) {
+                url = `/api/chamados/admin-filtro?adminId=${usuario.id}`;
+            } else {
+                url = `/api/chamados/cliente/${usuario.id}`;
+            }
 
-        document.getElementById("mFechados").textContent =
-            dados.filter(c => c.status === "FECHADO").length;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(res.status);
+
+            const chamados = await res.json();
+
+            // --- Estatísticas ---
+            const total = chamados.length;
+            const abertos = chamados.filter(c => c.status === "ABERTO").length;
+            const andamento = chamados.filter(c => c.status === "EM_ANDAMENTO").length;
+            const resolvidos = chamados.filter(c =>
+                c.status === "RESOLVIDO" || c.status === "FECHADO"
+            ).length;
+
+            statTotal.textContent = total;
+            statAbertos.textContent = abertos;
+            statAndamento.textContent = andamento;
+            statResolvidos.textContent = resolvidos;
+
+            // --- Últimos chamados ---
+            listaRecentes.innerHTML = "";
+
+            if (chamados.length === 0) {
+                listaRecentes.innerHTML =
+                    '<p style="color:#bbb;">Nenhum chamado encontrado.</p>';
+                return;
+            }
+
+            const ordenados = [...chamados].sort((a, b) => {
+                const da = a.dataCriacao ? new Date(a.dataCriacao) : new Date(0);
+                const db = b.dataCriacao ? new Date(b.dataCriacao) : new Date(0);
+                return db - da;
+            });
+
+            const ultimos = ordenados.slice(0, 5);
+
+            ultimos.forEach(c => {
+                const item = document.createElement("div");
+                item.classList.add("recent-item");
+
+                const data = c.dataCriacao ? new Date(c.dataCriacao) : null;
+                const dataLegivel = data
+                    ? data.toLocaleString("pt-BR")
+                    : "Sem data";
+
+                item.innerHTML = `
+                    <div class="recent-item-header">
+                        <span class="recent-item-title">${c.titulo}</span>
+                        <span class="recent-item-status ${c.status}">
+                            ${c.status.replace("_", " ")}
+                        </span>
+                    </div>
+                    <div class="recent-item-meta">
+                        Criado em: ${dataLegivel}
+                    </div>
+                    <div class="recent-item-desc">
+                        ${c.descricao ? c.descricao.substring(0, 120) + (c.descricao.length > 120 ? "..." : "") : ""}
+                    </div>
+                    <a href="/detalhes.html?id=${c.id}">Ver detalhes</a>
+                `;
+
+                listaRecentes.appendChild(item);
+            });
+        } catch (err) {
+            console.error("Erro ao carregar painel:", err);
+            listaRecentes.innerHTML =
+                `<p style="color:#ffb3b3;">Erro ao carregar dados. Código: ${err.message}</p>`;
+
+            Toastify({
+                text: `Erro ao carregar dados do painel (código ${err.message})`,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+            }).showToast();
+        }
     }
+
+    carregarDashboard();
 </script>
 
 </body>
