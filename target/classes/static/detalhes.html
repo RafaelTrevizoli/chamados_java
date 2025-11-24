@@ -4,10 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Chamado</title>
+
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        .detalhes-wrapper {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .detalhes-card {
+            background-color: #3c3c4c;
+            padding: 1.5rem;
+            border-radius: 12px;
+            width: 100%;
+            flex: 2;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+        }
+
+        .admin-section {
+            background-color: #3c3c4c;
+            padding: 1.5rem;
+            border-radius: 12px;
+            flex: 1;
+            min-width: 300px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-ABERTO { background:#1565c0; }
+        .status-EM_ANDAMENTO { background:#ef6c00; }
+        .status-RESOLVIDO { background:#2e7d32; }
+        .status-FECHADO { background:#6d4c41; }
+
+        .comentario-bloco {
+            background-color: #2b2b38;
+            padding: 0.9rem 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
 </head>
+
 <body>
 
 <div id="navbar"></div>
@@ -17,16 +66,15 @@
         <h1>Detalhes do Chamado</h1>
 
         <div class="detalhes-wrapper">
-            <!-- Card principal com informações do chamado -->
-            <div id="conteudoChamado" class="detalhes-card">
-                <!-- Preenchido via JS -->
-            </div>
 
-            <!-- Box lateral apenas para ADMIN -->
+            <!-- Informações principais -->
+            <div id="conteudoChamado" class="detalhes-card"></div>
+
+            <!-- Ações do Admin -->
             <div id="adminBox" class="admin-section" style="display:none;">
                 <h2>Ações do Administrador</h2>
 
-                <label for="statusSelect">Status do chamado</label>
+                <label>Status do Chamado</label>
                 <select id="statusSelect">
                     <option value="ABERTO">ABERTO</option>
                     <option value="EM_ANDAMENTO">EM ANDAMENTO</option>
@@ -34,13 +82,16 @@
                     <option value="FECHADO">FECHADO</option>
                 </select>
 
-                <label for="comentarioAdmin">Comentário do atendimento</label>
-                <textarea id="comentarioAdmin" rows="4"
-                          placeholder="Adicione orientações ou observações para o cliente"></textarea>
+                <label>Adicionar Comentário</label>
+                <textarea id="comentarioAdmin" rows="4" placeholder="Mensagem ao cliente..."></textarea>
 
-                <button id="btnSalvarAdmin" class="primary">Salvar alterações</button>
+                <button id="btnSalvarAdmin" class="primary" style="margin-top:1rem;">Salvar alterações</button>
             </div>
         </div>
+
+        <h2 style="margin-top:2rem;">Comentários</h2>
+        <div id="listaComentarios"></div>
+
     </div>
 </main>
 
@@ -48,108 +99,125 @@
 
 <script src="/script/includes.js"></script>
 <script>
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-    if (!usuario) window.location.href = "/login.html";
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+if (!usuario) window.location.href = "/login.html";
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+document.addEventListener("DOMContentLoaded", () => {
+    const id = new URLSearchParams(window.location.search).get("id");
 
-        const conteudo = document.getElementById("conteudoChamado");
-        const adminBox = document.getElementById("adminBox");
-        const statusSelect = document.getElementById("statusSelect");
-        const comentarioAdmin = document.getElementById("comentarioAdmin");
-        const btnSalvarAdmin = document.getElementById("btnSalvarAdmin");
+    const conteudo = document.getElementById("conteudoChamado");
+    const adminBox = document.getElementById("adminBox");
+    const statusSelect = document.getElementById("statusSelect");
+    const comentarioAdmin = document.getElementById("comentarioAdmin");
+    const listaComentarios = document.getElementById("listaComentarios");
 
-        const isAdmin = usuario.nivel === 'ADMIN';
+    const isAdmin = usuario.nivel === "ADMIN";
 
-        async function carregar() {
-            try {
-                const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
-                if (!res.ok) throw new Error(res.status);
-                const c = await res.json();
+    async function carregarChamado() {
+        try {
+            const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
+            if (!res.ok) throw new Error(res.status);
 
-                const dataCriacao = c.dataCriacao ? new Date(c.dataCriacao).toLocaleString() : '-';
+            const c = await res.json();
+            const dataCriacao = c.dataCriacao ? new Date(c.dataCriacao).toLocaleString() : "-";
 
-                conteudo.innerHTML = `
-                    <h2>${c.titulo}</h2>
+            conteudo.innerHTML = `
+                <h2>${c.titulo}</h2>
 
-                    <p class="detalhes-meta">
-                        <strong>Status:</strong>
-                        <span class="status-badge status-${c.status}">${c.status}</span>
-                    </p>
+                <p><strong>Status:</strong> 
+                    <span class="status-badge status-${c.status}">${c.status}</span>
+                </p>
 
-                    <p class="detalhes-meta">
-                        <strong>Data de abertura:</strong> ${dataCriacao}
-                    </p>
+                <p><strong>Data de abertura:</strong> ${dataCriacao}</p>
 
-                    ${c.cliente ? `
-                        <p class="detalhes-meta">
-                            <strong>Cliente:</strong> [${c.cliente.id}] ${c.cliente.nome || ''}
-                        </p>
-                    ` : ''}
+                <p><strong>Cliente:</strong> [${c.cliente.id}] ${c.cliente.nome}</p>
 
-                    <h3>Descrição</h3>
-                    <p class="detalhes-descricao">
-                        ${c.descricao}
-                    </p>
+                <h3>Descrição</h3>
+                <p>${c.descricao}</p>
 
-                    ${c.comentarioAdmin ? `
-                        <div class="comentario-bloco">
-                            <h3>Comentário do atendimento</h3>
-                            <p>${c.comentarioAdmin}</p>
-                        </div>
-                    ` : ''}
-                `;
+                ${c.comentarioAdmin ? `
+                <div class="comentario-bloco">
+                    <h3>Comentário do Atendimento</h3>
+                    <p>${c.comentarioAdmin}</p>
+                </div>` : ""}
+            `;
 
-                if (isAdmin) {
-                    adminBox.style.display = 'block';
-                    statusSelect.value = c.status;
-                    comentarioAdmin.value = c.comentarioAdmin || '';
-                }
-            } catch (err) {
-                conteudo.innerHTML =
-                    `<p style="color:#ffb3b3;">Erro ao carregar chamado. Código: ${err.message}</p>`;
+            if (isAdmin) {
+                adminBox.style.display = "block";
+                statusSelect.value = c.status;
             }
-        }
 
-        if (isAdmin) {
-            btnSalvarAdmin.addEventListener("click", async () => {
-                try {
-                    const res = await fetch(`/api/chamados/${id}/admin?adminId=${usuario.id}`, {
-                        method: "PUT",
+        } catch (err) {
+            conteudo.innerHTML = `<p style="color:#ffb3b3;">Erro ao carregar (Código ${err.message})</p>`;
+        }
+    }
+
+
+    async function carregarComentarios() {
+        const res = await fetch(`/api/comentarios/${id}`);
+        const lista = await res.json();
+
+        listaComentarios.innerHTML = "";
+
+        lista.forEach(cm => {
+            listaComentarios.innerHTML += `
+                <div class="comentario-bloco">
+                    <p><strong>${cm.autor.nome}</strong> (${new Date(cm.dataCriacao).toLocaleString()})</p>
+                    <p>${cm.texto}</p>
+                </div>
+            `;
+        });
+    }
+
+    // === SALVAR STATUS + COMENTÁRIO ===
+    if (isAdmin) {
+        document.getElementById("btnSalvarAdmin").addEventListener("click", async () => {
+            try {
+                // 1) Atualizar STATUS
+                await fetch(`/api/chamados/${id}/status?adminId=${usuario.id}&status=${statusSelect.value}`, {
+                    method: "PUT"
+                });
+
+                // 2) Criar COMENTÁRIO
+                if (comentarioAdmin.value.trim() !== "") {
+                    await fetch(`/api/comentarios?adminId=${usuario.id}`, {
+                        method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            status: statusSelect.value,
-                            comentarioAdmin: comentarioAdmin.value
+                            chamado: { id: id },
+                            texto: comentarioAdmin.value
                         })
                     });
-
-                    if (!res.ok) throw new Error(res.status);
-
-                    Toastify({
-                        text: "Chamado atualizado com sucesso!",
-                        duration: 2000,
-                        gravity: "top",
-                        position: "right",
-                        style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
-                    }).showToast();
-
-                    carregar();
-                } catch (err) {
-                    Toastify({
-                        text: `Erro ao atualizar chamado (Código ${err.message})`,
-                        duration: 2500,
-                        gravity: "top",
-                        position: "right",
-                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                    }).showToast();
                 }
-            });
-        }
 
-        carregar();
-    });
+                Toastify({
+                    text: "Chamado atualizado!",
+                    duration: 2000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                }).showToast();
+
+                comentarioAdmin.value = "";
+                carregarChamado();
+                carregarComentarios();
+
+            } catch (err) {
+                Toastify({
+                    text: "Erro ao atualizar: " + err.message,
+                    duration: 2500,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "#ff5f6d" }
+                }).showToast();
+            }
+        });
+    }
+
+    carregarChamado();
+    carregarComentarios();
+});
 </script>
+
 </body>
 </html>
