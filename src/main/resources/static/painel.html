@@ -9,13 +9,14 @@
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 
-    <!-- Toastify -->
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://unpkg.com/feather-icons/dist/feather.css">
 
     <style>
-        /* ======== ESTILO DO TEMA ESCURO ======== */
+        /* Painel atualizado mantendo seu estilo */
+
         body {
-          background-color: #1e1e2f;
+          background: linear-gradient(160deg, #1e1e2f 0%, #181824 100%);
           color: #f5f5f5;
           font-family: 'Poppins', sans-serif;
           margin: 0;
@@ -28,7 +29,6 @@
           padding: 6rem 1rem 5rem 1rem;
           display: flex;
           justify-content: center;
-          box-sizing: border-box;
         }
 
         .container {
@@ -38,220 +38,192 @@
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
           max-width: 1100px;
           width: 100%;
-          box-sizing: border-box;
-          text-align: center;
         }
 
         h1 {
           color: #2196f3;
-          margin-bottom: 0.5rem;
+          margin-bottom: .2rem;
         }
 
-        p {
-          color: #ccc;
-          margin-bottom: 2rem;
+        #subinfo {
+          color: #aaa;
+          font-size: .95rem;
+          margin-bottom: 1.8rem;
         }
 
-        /* ======== CARDS DO PAINEL ======== */
-        .painel-container {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          align-items: center;
-          gap: 2rem;
-          margin-top: 2rem;
+        /* Cards */
+        .dashboard-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 1.5rem;
         }
 
         .card {
           background-color: #3c3c4c;
+          padding: 1.5rem;
           border-radius: 12px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-          width: 260px;
-          height: 150px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          text-decoration: none;
-          color: #f5f5f5;
-          transition: transform 0.2s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
-        }
-
-        .card h2 {
-          margin: 0;
-          font-size: 1.2rem;
-          color: #2196f3;
-          text-align: center;
-        }
-
-        .card p {
-          margin-top: 0.5rem;
-          font-size: 0.95rem;
-          color: #ccc;
-          text-align: center;
-        }
-
-        @media (max-width: 480px) {
-          .card {
-            width: 90%;
-          }
-        }
-
-        /* ======== NAVBAR ======== */
-        header.navbar {
-          width: 100%;
-          background-color: #2c2c3c;
-          color: #f5f5f5;
-          padding: 1rem 2rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          position: fixed;
-          top: 0;
-          left: 0;
-          z-index: 1000;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-          box-sizing: border-box;
-        }
-
-        .navbar .brand {
-          font-weight: 600;
-          font-size: 1.25rem;
-          color: #2196f3;
-        }
-
-        .navbar nav {
           display: flex;
           align-items: center;
           gap: 1rem;
-        }
-
-        .navbar a {
-          color: #f5f5f5;
-          text-decoration: none;
-          font-weight: 500;
-          transition: color 0.3s;
-        }
-
-        .navbar a:hover {
-          color: #90caf9;
-        }
-
-        .logout-btn {
-          background-color: #2196f3;
-          color: #fff;
-          padding: 0.4rem 0.8rem;
-          border: none;
-          border-radius: 6px;
+          transition: .25s ease;
           cursor: pointer;
-          transition: background-color 0.3s;
         }
 
-        .logout-btn:hover {
-          background-color: #1769aa;
+        .card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 0 14px rgba(33,150,243,.3);
         }
 
-        @media (max-width: 768px) {
-          .navbar {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-          }
-
-          .navbar nav {
-            flex-direction: column;
-            align-items: flex-start;
-            width: 100%;
-          }
+        .card-icon {
+          background-color: #2196f3;
+          padding: 0.7rem;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        /* ======== FOOTER ======== */
-        footer {
-          width: 100%;
-          text-align: center;
-          padding: 1rem;
-          background-color: #2c2c3c;
-          color: #aaa;
-          font-size: 0.9rem;
+        .card-icon i {
+          color: white;
+        }
+
+        .card h3 {
+          margin: 0;
+          font-size: 1.2rem;
+          color: #fff;
+        }
+
+        .card p {
+          margin: .2rem 0 0 0;
+          font-size: .9rem;
+          color: #bbb;
+        }
+
+        /* Seção admin */
+        #adminMetrics {
+          margin-top: 2.5rem;
+          padding-top: 1.5rem;
           border-top: 1px solid #444;
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          box-sizing: border-box;
-          z-index: 999;
+        }
+
+        .metric-box {
+          background: #353545;
+          padding: 1.2rem;
+          border-radius: 10px;
+          text-align: center;
+          border-left: 4px solid #2196f3;
+        }
+
+        .metric-box h2 {
+          margin: 0;
+          font-size: 2rem;
+          color: #2196f3;
+        }
+
+        .metric-box span {
+          font-size: .9rem;
+          color: #ddd;
         }
     </style>
 </head>
 
 <body>
+
 <!-- NAVBAR -->
-<header class="navbar">
-    <div class="brand">Sistema de Chamados</div>
-    <nav>
-        <a href="/painel.html">Painel</a>
-        <a href="/chamados.html">Meus Chamados</a>
-        <a href="/perfil.html">Perfil</a>
-        <button id="logoutBtn" class="logout-btn">Sair</button>
-    </nav>
-</header>
+<div id="navbar"></div>
 
 <!-- CONTEÚDO -->
 <main>
     <div class="container">
-        <h1>Bem-vindo ao Sistema de Chamados</h1>
-        <p>Escolha uma das opções abaixo para continuar:</p>
 
-        <div class="painel-container">
-            <a href="/chamados.html" class="card">
-                <h2>Meus Chamados</h2>
-                <p>Crie e visualize seus chamados</p>
-            </a>
+        <h1>Olá, <span id="nomeUsuario"></span> 👋</h1>
+        <p id="subinfo"></p>
 
-            <a href="/perfil.html" class="card">
-                <h2>Meu Perfil</h2>
-                <p>Gerencie suas informações pessoais</p>
-            </a>
+        <div class="dashboard-grid">
+            <div onclick="location.href='/chamados.html'" class="card">
+                <div class="card-icon"><i data-feather="file-text"></i></div>
+                <div>
+                    <h3>Meus Chamados</h3>
+                    <p>Crie e visualize seus chamados</p>
+                </div>
+            </div>
+
+            <div onclick="location.href='/perfil.html'" class="card">
+                <div class="card-icon"><i data-feather="user"></i></div>
+                <div>
+                    <h3>Meu Perfil</h3>
+                    <p>Gerencie suas informações pessoais</p>
+                </div>
+            </div>
         </div>
+
+        <!-- Seção exclusiva para ADMIN -->
+        <div id="adminMetrics" style="display:none;">
+            <h2 style="margin-bottom:1rem;color:#2196f3;">Visão Geral do Sistema</h2>
+
+            <div class="dashboard-grid">
+                <div class="metric-box">
+                    <h2 id="mAbertos">0</h2>
+                    <span>Abertos</span>
+                </div>
+
+                <div class="metric-box">
+                    <h2 id="mAndamento">0</h2>
+                    <span>Em Andamento</span>
+                </div>
+
+                <div class="metric-box">
+                    <h2 id="mResolvidos">0</h2>
+                    <span>Resolvidos</span>
+                </div>
+
+                <div class="metric-box">
+                    <h2 id="mFechados">0</h2>
+                    <span>Fechados</span>
+                </div>
+            </div>
+        </div>
+
     </div>
 </main>
 
-<!-- FOOTER -->
-<footer>
-    © 2025 Sistema de Chamados - Desenvolvido por Rafael Trevizoli
-</footer>
+<div id="footer"></div>
 
-<!-- SCRIPT -->
+<script src="/script/includes.js"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+<script> feather.replace(); </script>
+
 <script>
-    // Verifica login
     const usuario = JSON.parse(localStorage.getItem("usuario"));
-    if (!usuario) {
-      Toastify({
-        text: "Sessão expirada. Faça login novamente.",
-        duration: 2500,
-        gravity: "top",
-        position: "right",
-        style: { background: "#ff5f6d" },
-      }).showToast();
-      window.location.href = "/login.html";
+    if (!usuario) location.href = "/login.html";
+
+    document.getElementById("nomeUsuario").textContent = usuario.nome;
+    document.getElementById("subinfo").textContent =
+      "Você está logado como: " + usuario.nivel;
+
+    // ADMIN => mostrar métricas
+    if (usuario.nivel === "ADMIN") {
+        document.getElementById("adminMetrics").style.display = "block";
+        carregarMetricas();
     }
 
-    // Logout
-    document.getElementById("logoutBtn")?.addEventListener("click", () => {
-      localStorage.clear();
-      Toastify({
-        text: "Logout realizado!",
-        duration: 2000,
-        gravity: "top",
-        position: "right",
-        style: { background: "#2196f3" },
-      }).showToast();
-      setTimeout(() => (window.location.href = "/login.html"), 1500);
-    });
+    async function carregarMetricas() {
+        const res = await fetch("/api/chamados");
+        const dados = await res.json();
+
+        document.getElementById("mAbertos").textContent =
+            dados.filter(c => c.status === "ABERTO").length;
+
+        document.getElementById("mAndamento").textContent =
+            dados.filter(c => c.status === "EM_ANDAMENTO").length;
+
+        document.getElementById("mResolvidos").textContent =
+            dados.filter(c => c.status === "RESOLVIDO").length;
+
+        document.getElementById("mFechados").textContent =
+            dados.filter(c => c.status === "FECHADO").length;
+    }
 </script>
+
 </body>
 </html>

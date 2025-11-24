@@ -17,7 +17,6 @@ public class Usuario {
     private String email;
     private String senha;
 
-    // Campo adicional para nível de usuário
     @Enumerated(EnumType.STRING)
     private NivelUsuario nivel = NivelUsuario.COMUM;
 

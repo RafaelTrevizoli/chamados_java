@@ -74,6 +74,22 @@ button.primary:hover {
     background-color: #1769aa;
 }
 
+button.secondary {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: transparent;
+    border: 1px solid #888;
+    color: #f5f5f5;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button.secondary:hover {
+    background-color: #444;
+}
+
 /* ======== CHAMADOS WRAPPER ======== */
 .chamados-wrapper {
     display: flex;
@@ -130,6 +146,128 @@ button.primary:hover {
     font-size: 0.95rem;
 }
 
+/* ======== BADGE DE STATUS ======== */
+.status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-ABERTO {
+    background-color: rgba(33, 150, 243, 0.15);
+    color: #64b5f6;
+}
+
+.status-EM_ANDAMENTO {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ffca28;
+}
+
+.status-RESOLVIDO {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #81c784;
+}
+
+.status-FECHADO {
+    background-color: rgba(158, 158, 158, 0.15);
+    color: #e0e0e0;
+}
+
+/* ======== DETALHES DO CHAMADO ======== */
+.detalhes-wrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.detalhes-card {
+    flex: 2;
+    min-width: 320px;
+    background-color: #3c3c4c;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+}
+
+.detalhes-meta {
+    margin: 0.3rem 0;
+    color: #ccc;
+    font-size: 0.95rem;
+}
+
+.detalhes-descricao {
+    margin-top: 0.8rem;
+    color: #f5f5f5;
+    line-height: 1.5;
+}
+
+.comentario-bloco {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #353545;
+    border: 1px solid #555;
+}
+
+.comentario-bloco h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.comentario-bloco p {
+    margin: 0;
+    color: #ddd;
+}
+
+/* ======== ADMIN SECTION (DETALHES) ======== */
+.admin-section {
+    flex: 1;
+    min-width: 280px;
+    background-color: #3c3c4c;
+    padding: 1.25rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+}
+
+.admin-section h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+/* ======== FILTROS ADMIN NA LISTA ======== */
+.admin-filtros {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    background-color: #343446;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.admin-filtros h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filtros-botoes {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /* ======== RESPONSIVIDADE ======== */
 @media (max-width: 768px) {
     main {
@@ -146,5 +284,26 @@ button.primary:hover {
 
     .lista-section h2 {
         text-align: center;
+    }
+
+    .detalhes-wrapper {
+        flex-direction: column;
+    }
+
+    .admin-section {
+        width: 100%;
+    }
+
+    .filtros-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filtros-botoes {
+        flex-direction: column;
+    }
+
+    button.primary,
+    button.secondary {
+        width: 100%;
     }
 }

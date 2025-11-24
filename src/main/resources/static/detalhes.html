@@ -4,159 +4,152 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Chamado</title>
-
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-    <style>
-        .comentario {
-            background-color: #3c3c4c;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: .8rem;
-        }
-        .comentario small {
-            color: #aaa;
-        }
-    </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <div id="navbar"></div>
 
 <main>
     <div class="container">
         <h1>Detalhes do Chamado</h1>
 
-        <div id="conteudo"></div>
+        <div class="detalhes-wrapper">
+            <!-- Card principal com informações do chamado -->
+            <div id="conteudoChamado" class="detalhes-card">
+                <!-- Preenchido via JS -->
+            </div>
 
-        <!-- APENAS PARA ADMIN -->
-        <div id="adminArea" style="display:none; margin-top:2rem;">
+            <!-- Box lateral apenas para ADMIN -->
+            <div id="adminBox" class="admin-section" style="display:none;">
+                <h2>Ações do Administrador</h2>
 
-            <h2>Alterar Status</h2>
-            <select id="status">
-                <option value="ABERTO">ABERTO</option>
-                <option value="EM_ANDAMENTO">EM ANDAMENTO</option>
-                <option value="RESOLVIDO">RESOLVIDO</option>
-                <option value="FECHADO">FECHADO</option>
-            </select>
-            <button id="btnStatus" class="primary" style="margin-bottom:2rem;">Salvar</button>
+                <label for="statusSelect">Status do chamado</label>
+                <select id="statusSelect">
+                    <option value="ABERTO">ABERTO</option>
+                    <option value="EM_ANDAMENTO">EM ANDAMENTO</option>
+                    <option value="RESOLVIDO">RESOLVIDO</option>
+                    <option value="FECHADO">FECHADO</option>
+                </select>
 
-            <h2>Comentários</h2>
-            <div id="listaComentarios"></div>
+                <label for="comentarioAdmin">Comentário do atendimento</label>
+                <textarea id="comentarioAdmin" rows="4"
+                          placeholder="Adicione orientações ou observações para o cliente"></textarea>
 
-            <textarea id="novoComentario" placeholder="Escreva um comentário..."></textarea>
-            <button id="btnComentar" class="primary">Enviar Comentário</button>
+                <button id="btnSalvarAdmin" class="primary">Salvar alterações</button>
+            </div>
         </div>
-
     </div>
 </main>
+
+<div id="footer"></div>
 
 <script src="/script/includes.js"></script>
 <script>
     const usuario = JSON.parse(localStorage.getItem("usuario"));
     if (!usuario) window.location.href = "/login.html";
 
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+    document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
 
-    const conteudo = document.getElementById("conteudo");
-    const adminArea = document.getElementById("adminArea");
+        const conteudo = document.getElementById("conteudoChamado");
+        const adminBox = document.getElementById("adminBox");
+        const statusSelect = document.getElementById("statusSelect");
+        const comentarioAdmin = document.getElementById("comentarioAdmin");
+        const btnSalvarAdmin = document.getElementById("btnSalvarAdmin");
 
-    // se for admin, mostra os controles
-    if (usuario.nivel === "ADMIN") {
-        adminArea.style.display = "block";
-    }
+        const isAdmin = usuario.nivel === 'ADMIN';
 
-    // ==============================
-    // CARREGAR DETALHES DO CHAMADO
-    // ==============================
-    async function carregarChamado() {
-        const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
-        const c = await res.json();
+        async function carregar() {
+            try {
+                const res = await fetch(`/api/chamados/${id}?usuarioId=${usuario.id}`);
+                if (!res.ok) throw new Error(res.status);
+                const c = await res.json();
 
-        conteudo.innerHTML = `
-            <h2>${c.titulo}</h2>
-            <p>${c.descricao}</p>
+                const dataCriacao = c.dataCriacao ? new Date(c.dataCriacao).toLocaleString() : '-';
 
-            <p><strong>Status:</strong> ${c.status}</p>
-            <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString()}</p>
+                conteudo.innerHTML = `
+                    <h2>${c.titulo}</h2>
 
-            <p><strong>Cliente:</strong> ${c.cliente.nome}</p>
-        `;
+                    <p class="detalhes-meta">
+                        <strong>Status:</strong>
+                        <span class="status-badge status-${c.status}">${c.status}</span>
+                    </p>
 
-        if (usuario.nivel === "ADMIN") {
-            document.getElementById("status").value = c.status;
-            carregarComentarios();
+                    <p class="detalhes-meta">
+                        <strong>Data de abertura:</strong> ${dataCriacao}
+                    </p>
+
+                    ${c.cliente ? `
+                        <p class="detalhes-meta">
+                            <strong>Cliente:</strong> [${c.cliente.id}] ${c.cliente.nome || ''}
+                        </p>
+                    ` : ''}
+
+                    <h3>Descrição</h3>
+                    <p class="detalhes-descricao">
+                        ${c.descricao}
+                    </p>
+
+                    ${c.comentarioAdmin ? `
+                        <div class="comentario-bloco">
+                            <h3>Comentário do atendimento</h3>
+                            <p>${c.comentarioAdmin}</p>
+                        </div>
+                    ` : ''}
+                `;
+
+                if (isAdmin) {
+                    adminBox.style.display = 'block';
+                    statusSelect.value = c.status;
+                    comentarioAdmin.value = c.comentarioAdmin || '';
+                }
+            } catch (err) {
+                conteudo.innerHTML =
+                    `<p style="color:#ffb3b3;">Erro ao carregar chamado. Código: ${err.message}</p>`;
+            }
         }
-    }
 
-    // ==============================
-    // CARREGAR COMENTÁRIOS
-    // ==============================
-    async function carregarComentarios() {
-        const res = await fetch(`/api/comentarios/${id}`);
-        const lista = await res.json();
+        if (isAdmin) {
+            btnSalvarAdmin.addEventListener("click", async () => {
+                try {
+                    const res = await fetch(`/api/chamados/${id}/admin?adminId=${usuario.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            status: statusSelect.value,
+                            comentarioAdmin: comentarioAdmin.value
+                        })
+                    });
 
-        const div = document.getElementById("listaComentarios");
-        div.innerHTML = "";
+                    if (!res.ok) throw new Error(res.status);
 
-        lista.forEach(cm => {
-            const el = document.createElement("div");
-            el.classList.add("comentario");
-            el.innerHTML = `
-                <p>${cm.texto}</p>
-                <small>${new Date(cm.dataCriacao).toLocaleString()} - ${cm.autor.nome}</small>
-            `;
-            div.appendChild(el);
-        });
-    }
+                    Toastify({
+                        text: "Chamado atualizado com sucesso!",
+                        duration: 2000,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                    }).showToast();
 
-    // ==============================
-    // SALVAR STATUS (somente admin)
-    // ==============================
-    document.getElementById("btnStatus")?.addEventListener("click", async () => {
-        const novoStatus = document.getElementById("status").value;
+                    carregar();
+                } catch (err) {
+                    Toastify({
+                        text: `Erro ao atualizar chamado (Código ${err.message})`,
+                        duration: 2500,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                    }).showToast();
+                }
+            });
+        }
 
-        await fetch(`/api/chamados/${id}/status?adminId=${usuario.id}&status=${novoStatus}`, {
-            method: "PUT"
-        });
-
-        Toastify({
-            text: "Status atualizado!",
-            duration: 2000,
-            gravity: "top",
-            position: "right",
-            style: { background: "#00b09b" }
-        }).showToast();
-
-        carregarChamado();
+        carregar();
     });
-
-    // ==============================
-    // ENVIAR COMENTÁRIO (somente admin)
-    // ==============================
-    document.getElementById("btnComentar")?.addEventListener("click", async () => {
-        const texto = document.getElementById("novoComentario").value.trim();
-        if (!texto) return;
-
-        await fetch(`/api/comentarios?adminId=${usuario.id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                texto: texto,
-                chamado: { id: id }
-            })
-        });
-
-        document.getElementById("novoComentario").value = "";
-        carregarComentarios();
-    });
-
-    carregarChamado();
 </script>
-
 </body>
 </html>

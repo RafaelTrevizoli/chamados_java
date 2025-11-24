@@ -20,12 +20,37 @@
 <!-- Conteúdo principal -->
 <main>
     <div class="container">
-        <h1>Meus Chamados</h1>
+        <h1 id="tituloPagina">Meus Chamados</h1>
+
+        <!-- Filtros só para ADMIN -->
+        <div id="adminFiltros" class="admin-filtros" style="display:none;">
+            <h2>Filtros de Administração</h2>
+            <div class="filtros-grid">
+                <div>
+                    <label for="filtroStatus">Status</label>
+                    <select id="filtroStatus">
+                        <option value="">Todos</option>
+                        <option value="ABERTO">ABERTO</option>
+                        <option value="EM_ANDAMENTO">EM ANDAMENTO</option>
+                        <option value="RESOLVIDO">RESOLVIDO</option>
+                        <option value="FECHADO">FECHADO</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtroClienteId">ID do Cliente</label>
+                    <input id="filtroClienteId" type="number" placeholder="Ex: 1">
+                </div>
+                <div class="filtros-botoes">
+                    <button id="btnFiltrar" class="primary">Aplicar filtros</button>
+                    <button id="btnLimpar" class="secondary">Limpar</button>
+                </div>
+            </div>
+        </div>
 
         <div class="chamados-wrapper">
 
-            <!-- Coluna esquerda: Formulário -->
-            <div class="form-section">
+            <!-- Coluna esquerda: Formulário (esconde para ADMIN) -->
+            <div class="form-section" id="formCriarChamado">
                 <h2 style="margin-bottom: .8rem;">Criar novo chamado</h2>
                 <input id="titulo" placeholder="Título do chamado"/>
                 <textarea id="descricao" placeholder="Descrição detalhada"></textarea>
@@ -53,93 +78,168 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         const btnCriar = document.getElementById("btnCriar");
-        const titulo = document.getElementById("titulo");
-        const descricao = document.getElementById("descricao");
+        const tituloInput = document.getElementById("titulo");
+        const descricaoInput = document.getElementById("descricao");
         const lista = document.getElementById("listaChamados");
 
-        // Carregar chamados do usuário
-        async function carregarChamados() {
+        const adminFiltros = document.getElementById("adminFiltros");
+        const formCriar = document.getElementById("formCriarChamado");
+        const tituloPagina = document.getElementById("tituloPagina");
+
+        const filtroStatus = document.getElementById("filtroStatus");
+        const filtroClienteId = document.getElementById("filtroClienteId");
+        const btnFiltrar = document.getElementById("btnFiltrar");
+        const btnLimpar = document.getElementById("btnLimpar");
+
+        const isAdmin = usuario.nivel === 'ADMIN';
+
+        // Se for ADMIN, mostra filtros e esconde o formulário de criação
+        if (isAdmin) {
+            adminFiltros.style.display = 'block';
+            formCriar.style.display = 'none';
+            tituloPagina.textContent = 'Chamados - Administração';
+        }
+
+        function renderLista(chamados) {
+            lista.innerHTML = "";
+            if (!chamados.length) {
+                lista.innerHTML = "<p>Nenhum chamado encontrado.</p>";
+                return;
+            }
+
+            chamados.forEach(c => {
+                const item = document.createElement("div");
+                item.classList.add("chamado");
+
+                const data = c.dataCriacao ? new Date(c.dataCriacao).toLocaleString() : '-';
+
+                item.innerHTML = `
+                    <h3>
+                        <a href="/detalhes.html?id=${c.id}" style="text-decoration:none;color:#2196f3;">
+                            ${c.titulo}
+                        </a>
+                    </h3>
+
+                    ${isAdmin && c.cliente ? `<p><strong>Cliente:</strong> [${c.cliente.id}] ${c.cliente.nome || ''}</p>` : ''}
+
+                    <p><strong>Status:</strong> <span class="status-badge status-${c.status}">${c.status}</span></p>
+                    <p><strong>Data:</strong> ${data}</p>
+
+                    <p style="margin-top:.5rem;">${c.descricao}</p>
+                `;
+
+                lista.appendChild(item);
+            });
+        }
+
+        // Carregar chamados do cliente COMUM
+        async function carregarChamadosCliente() {
             try {
                 const res = await fetch(`/api/chamados/cliente/${usuario.id}`);
                 if (!res.ok) throw new Error(res.status);
                 const chamados = await res.json();
-
-                lista.innerHTML = "";
-                chamados.forEach(c => {
-                    const item = document.createElement("div");
-                    item.classList.add("chamado");
-
-                    item.innerHTML = `
-                        <h3>
-                            <a href="/detalhes.html?id=${c.id}" style="text-decoration:none;color:#2196f3;">
-                                ${c.titulo}
-                            </a>
-                        </h3>
-
-                        <p><strong>Status:</strong> ${c.status}</p>
-                        <p><strong>Data:</strong> ${new Date(c.dataCriacao).toLocaleString()}</p>
-
-                        <p style="margin-top:.5rem;">${c.descricao}</p>
-                    `;
-
-                    lista.appendChild(item);
-                });
+                renderLista(chamados);
             } catch (err) {
                 lista.innerHTML =
                     `<p style="color:red;">Erro ao buscar chamados. Código: ${err.message}</p>`;
             }
         }
 
-        // Criar chamado
-        btnCriar.addEventListener("click", async () => {
-            if (!titulo.value.trim() || !descricao.value.trim()) {
-                Toastify({
-                    text: "Preencha todos os campos!",
-                    duration: 2000,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                }).showToast();
-                return;
-            }
-
+        // Carregar chamados para ADMIN com filtros
+        async function carregarChamadosAdmin() {
             try {
-                const res = await fetch("/api/chamados", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        titulo: titulo.value,
-                        descricao: descricao.value,
-                        clienteId: usuario.id
-                    })
-                });
+                let url = `/api/chamados/admin?adminId=${usuario.id}`;
 
+                const status = filtroStatus.value;
+                const clienteId = filtroClienteId.value;
+
+                if (status) {
+                    url += `&status=${status}`;
+                }
+                if (clienteId) {
+                    url += `&clienteId=${clienteId}`;
+                }
+
+                const res = await fetch(url);
                 if (!res.ok) throw new Error(res.status);
-
-                titulo.value = "";
-                descricao.value = "";
-
-                Toastify({
-                    text: "Chamado criado com sucesso!",
-                    duration: 2000,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
-                }).showToast();
-
-                carregarChamados();
+                const chamados = await res.json();
+                renderLista(chamados);
             } catch (err) {
-                Toastify({
-                    text: `Erro ao criar chamado (Código ${err.message})`,
-                    duration: 2500,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                }).showToast();
+                lista.innerHTML =
+                    `<p style="color:red;">Erro ao buscar chamados (admin). Código: ${err.message}</p>`;
             }
-        });
+        }
 
-        carregarChamados();
+        // Criar chamado (apenas COMUM)
+        if (!isAdmin) {
+            btnCriar.addEventListener("click", async () => {
+                if (!tituloInput.value.trim() || !descricaoInput.value.trim()) {
+                    Toastify({
+                        text: "Preencha todos os campos!",
+                        duration: 2000,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                    }).showToast();
+                    return;
+                }
+
+                try {
+                    const res = await fetch("/api/chamados", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            titulo: tituloInput.value,
+                            descricao: descricaoInput.value,
+                            clienteId: usuario.id
+                        })
+                    });
+
+                    if (!res.ok) throw new Error(res.status);
+
+                    tituloInput.value = "";
+                    descricaoInput.value = "";
+
+                    Toastify({
+                        text: "Chamado criado com sucesso!",
+                        duration: 2000,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                    }).showToast();
+
+                    carregarChamadosCliente();
+                } catch (err) {
+                    Toastify({
+                        text: `Erro ao criar chamado (Código ${err.message})`,
+                        duration: 2500,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                    }).showToast();
+                }
+            });
+        }
+
+        // Eventos dos filtros (ADMIN)
+        if (isAdmin) {
+            btnFiltrar.addEventListener("click", () => {
+                carregarChamadosAdmin();
+            });
+
+            btnLimpar.addEventListener("click", () => {
+                filtroStatus.value = "";
+                filtroClienteId.value = "";
+                carregarChamadosAdmin();
+            });
+        }
+
+        // Inicial
+        if (isAdmin) {
+            carregarChamadosAdmin();
+        } else {
+            carregarChamadosCliente();
+        }
     });
 </script>
 </body>
