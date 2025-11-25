@@ -23,7 +23,7 @@ public class ChamadoController {
     private UsuarioRepository usuarioRepository;
 
     // ============================
-    // NOVO → LISTAR TODOS (para dashboard)
+    // LISTAR TODOS (dashboard geral)
     // ============================
     @GetMapping
     public ResponseEntity<?> listarTodos() {
@@ -31,7 +31,7 @@ public class ChamadoController {
     }
 
     // ============================
-    // LISTAR CHAMADOS DO CLIENTE
+    // LISTAR POR CLIENTE (usuário comum)
     // ============================
     @GetMapping("/cliente/{idCliente}")
     public ResponseEntity<?> listarPorCliente(@PathVariable Long idCliente) {
@@ -39,7 +39,40 @@ public class ChamadoController {
     }
 
     // ============================
-    // BUSCAR POR ID
+    // ADMIN — FILTRAR CHAMADOS
+    // ============================
+    @GetMapping("/admin-filtro")
+    public ResponseEntity<?> adminFiltro(
+            @RequestParam Long adminId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long clienteId) {
+
+        Usuario admin = usuarioRepository.findById(adminId).orElse(null);
+
+        if (admin == null || admin.getNivel() != Usuario.NivelUsuario.ADMIN)
+            return ResponseEntity.status(403).body("Acesso negado (não é admin)");
+
+        List<Chamado> lista = chamadoRepository.findAll();
+
+        // FILTRO DE STATUS
+        if (status != null && !status.isBlank()) {
+            lista = lista.stream()
+                    .filter(c -> c.getStatus().name().equals(status))
+                    .toList();
+        }
+
+        // FILTRO DE CLIENTE
+        if (clienteId != null) {
+            lista = lista.stream()
+                    .filter(c -> c.getCliente().getId().equals(clienteId))
+                    .toList();
+        }
+
+        return ResponseEntity.ok(lista);
+    }
+
+    // ============================
+    // BUSCAR POR ID (com permissão)
     // ============================
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(
@@ -49,31 +82,21 @@ public class ChamadoController {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
         if (usuario == null) return ResponseEntity.status(401).body("Usuário não encontrado");
 
-        Chamado c = chamadoRepository.findById(id).orElse(null);
-        if (c == null) return ResponseEntity.notFound().build();
+        Chamado chamado = chamadoRepository.findById(id).orElse(null);
+        if (chamado == null) return ResponseEntity.notFound().build();
 
+        // Usuário comum só pode ver SE for o dono
         if (usuario.getNivel() == Usuario.NivelUsuario.COMUM &&
-                !c.getCliente().getId().equals(usuarioId))
-            return ResponseEntity.status(403).body("Acesso negado");
+                !chamado.getCliente().getId().equals(usuarioId)) {
 
-        return ResponseEntity.ok(c);
+            return ResponseEntity.status(403).body("Acesso negado");
+        }
+
+        return ResponseEntity.ok(chamado);
     }
 
     // ============================
-    // ADMIN → LISTAR TODOS
-    // ============================
-    @GetMapping("/admin-filtro")
-    public ResponseEntity<?> adminFiltro(@RequestParam Long adminId) {
-
-        Usuario admin = usuarioRepository.findById(adminId).orElse(null);
-        if (admin == null || admin.getNivel() != Usuario.NivelUsuario.ADMIN)
-            return ResponseEntity.status(403).body("Acesso negado");
-
-        return ResponseEntity.ok(chamadoRepository.findAll());
-    }
-
-    // ============================
-    // CRIAR CHAMADO
+    // CRIAR CHAMADO (somente usuário comum)
     // ============================
     @PostMapping
     public ResponseEntity<?> criarChamado(@RequestBody CriarChamadoRequest req) {
@@ -82,14 +105,14 @@ public class ChamadoController {
         if (cliente == null)
             return ResponseEntity.status(404).body("Cliente não encontrado");
 
-        Chamado c = new Chamado();
-        c.setTitulo(req.getTitulo());
-        c.setDescricao(req.getDescricao());
-        c.setCliente(cliente);
+        Chamado chamado = new Chamado();
+        chamado.setTitulo(req.getTitulo());
+        chamado.setDescricao(req.getDescricao());
+        chamado.setCliente(cliente);
 
-        chamadoRepository.save(c);
+        chamadoRepository.save(chamado);
 
-        return ResponseEntity.ok(c);
+        return ResponseEntity.ok(chamado);
     }
 
     public static class CriarChamadoRequest {
@@ -108,7 +131,7 @@ public class ChamadoController {
     }
 
     // ============================
-    // ADMIN → ALTERAR STATUS
+    // ALTERAR STATUS (ADMIN)
     // ============================
     @PutMapping("/{id}/status")
     public ResponseEntity<?> alterarStatus(
@@ -130,7 +153,7 @@ public class ChamadoController {
     }
 
     // ============================
-    // EXCLUIR CHAMADO (cliente ou admin)
+    // EXCLUIR (cliente ou admin)
     // ============================
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarChamado(
@@ -140,14 +163,17 @@ public class ChamadoController {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
         if (usuario == null) return ResponseEntity.status(401).body("Usuário não encontrado");
 
-        Chamado c = chamadoRepository.findById(id).orElse(null);
-        if (c == null) return ResponseEntity.notFound().build();
+        Chamado chamado = chamadoRepository.findById(id).orElse(null);
+        if (chamado == null) return ResponseEntity.notFound().build();
 
+        // Cliente só pode excluir o que pertence a ele
         if (usuario.getNivel() == Usuario.NivelUsuario.COMUM &&
-                !c.getCliente().getId().equals(usuarioId))
-            return ResponseEntity.status(403).body("Acesso negado");
+                !chamado.getCliente().getId().equals(usuarioId)) {
 
-        chamadoRepository.delete(c);
+            return ResponseEntity.status(403).body("Acesso negado");
+        }
+
+        chamadoRepository.delete(chamado);
         return ResponseEntity.noContent().build();
     }
 }

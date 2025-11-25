@@ -148,7 +148,7 @@
         // Carregar chamados para ADMIN com filtros
         async function carregarChamadosAdmin() {
             try {
-                let url = `/api/chamados/admin?adminId=${usuario.id}`;
+                let url = `/api/chamados/admin-filtro?adminId=${usuario.id}`;
 
                 const status = filtroStatus.value;
                 const clienteId = filtroClienteId.value;

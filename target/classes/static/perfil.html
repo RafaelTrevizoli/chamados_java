@@ -66,9 +66,15 @@
 
 <script>
     const usuario = JSON.parse(localStorage.getItem("usuario"));
-    document.getElementById("nome").value = usuario?.nome || "";
-    document.getElementById("email").value = usuario?.email || "";
-    document.getElementById("senha").value = usuario?.senha || "";
+
+    const nomeInput = document.getElementById("nome");
+    const emailInput = document.getElementById("email");
+    const senhaInput = document.getElementById("senha");
+
+    // Preenche os campos
+    nomeInput.value = usuario?.nome || "";
+    emailInput.value = usuario?.email || "";
+    senhaInput.value = usuario?.senha || "";
 
     document.getElementById("btnSalvar").addEventListener("click", async () => {
         const nome = nomeInput.value.trim();
@@ -110,6 +116,7 @@
                 position: "right",
                 style: { background: "#00b09b" }
             }).showToast();
+
         } catch (error) {
             Toastify({
                 text: "Erro ao atualizar o perfil.",
@@ -126,6 +133,7 @@
       window.location.href = "/login.html";
     }
 </script>
+
 
 </body>
 </html>
